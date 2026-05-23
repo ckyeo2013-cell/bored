@@ -653,10 +653,6 @@ function updateEnemies() {
           if (enemy.gorilla) {
             say("🦍 GORILLA BOY GOT ABSOLUTELY VAPORIZED");
 
-            // REMOVE BODY INSTANTLY TO PREVENT WALLS
-            enemy.el.style.pointerEvents = "none";
-            enemy.el.style.opacity = "0";
-
             // CHAOS SPLIT BANANAS
             for (let s = 0; s < 6; s++) {
 
@@ -1036,113 +1032,6 @@ setInterval(() => {
 }, 7000);
 
 //////////////////////////////
-// BLACK HOLE BANANA
-//////////////////////////////
-
-function spawnBlackHole(x, y) {
-
-  const hole = document.createElement("div");
-
-  hole.style.position = "absolute";
-  hole.style.left = x + "px";
-  hole.style.top = y + "px";
-
-  hole.style.width = "120px";
-  hole.style.height = "120px";
-
-  hole.style.borderRadius = "50%";
-
-  hole.style.background = "radial-gradient(circle, black 40%, purple 100%)";
-
-  hole.style.boxShadow = "0 0 40px purple";
-
-  hole.style.zIndex = "999";
-
-  game.appendChild(hole);
-
-  let life = 300;
-
-  const suck = setInterval(() => {
-
-    enemies.forEach((enemy, ei) => {
-
-      const dx = x - enemy.x;
-      const dy = y - enemy.y;
-
-      const dist = Math.hypot(dx, dy);
-
-      if (dist < 300) {
-
-        enemy.x += dx / dist * 4;
-        enemy.y += dy / dist * 4;
-      }
-
-      if (dist < 60) {
-
-        createExplosion(enemy.x, enemy.y);
-
-        enemy.el.remove();
-        enemies.splice(ei, 1);
-
-        score++;
-        scoreEl.innerText = score;
-      }
-    });
-
-    life--;
-
-    if (life <= 0) {
-      clearInterval(suck);
-      hole.remove();
-    }
-
-  }, 16);
-}
-
-//////////////////////////////
-// MONKEY RAIN
-//////////////////////////////
-
-function monkeyRain() {
-
-  say("🐒 MONKEY RAIN HAS STARTED");
-
-  for (let i = 0; i < 40; i++) {
-
-    setTimeout(() => {
-
-      const monkey = document.createElement("div");
-
-      monkey.innerText = "🐒";
-
-      monkey.style.position = "absolute";
-      monkey.style.fontSize = "40px";
-
-      monkey.style.left = Math.random() * window.innerWidth + "px";
-      monkey.style.top = "-50px";
-
-      game.appendChild(monkey);
-
-      let my = -50;
-
-      const fall = setInterval(() => {
-
-        my += 12;
-
-        monkey.style.top = my + "px";
-
-        if (my > window.innerHeight + 100) {
-          monkey.remove();
-          clearInterval(fall);
-        }
-
-      }, 16);
-
-    }, i * 100);
-  }
-}
-
-//////////////////////////////
 // SCREEN FLASHES
 //////////////////////////////
 
@@ -1155,4 +1044,111 @@ function flashScreen(color) {
   flash.style.background = color;
   flash.style.opacity = "0.35";
   flash.style.pointerEvents = "none";
-  flash.style.zIn
+  flash.style.zIndex = "999999";
+
+  flash.style.animation = "boom 0.3s ease forwards";
+
+  document.body.appendChild(flash);
+
+  setTimeout(() => {
+    flash.remove();
+  }, 300);
+}
+
+//////////////////////////////
+// MONKEY RAGE MODE
+//////////////////////////////
+
+function monkeyRage() {
+
+  say("🦍 MONKEY RAGE ACTIVATED");
+
+  for (let i = 0; i < 15; i++) {
+
+    setTimeout(() => {
+      spawnEnemy();
+    }, i * 100);
+  }
+}
+
+setInterval(() => {
+
+  if (Math.random() < 0.12 && !gameOver) {
+    monkeyRage();
+  }
+
+}, 18000);
+
+//////////////////////////////
+// SECRET KEYS
+//////////////////////////////
+
+document.addEventListener("keydown", e => {
+
+  if (e.key.toLowerCase() === "b") {
+    bananaStorm();
+  }
+
+  if (e.key.toLowerCase() === "k") {
+    spawnBoss();
+  }
+
+  if (e.key.toLowerCase() === "l") {
+    activateLaserMode();
+  }
+
+  if (e.key.toLowerCase() === "m") {
+    spawnMeteorBanana();
+  }
+
+  // NUCLEAR BANANA
+  if (e.key.toLowerCase() === "n") {
+
+    say("☢️ NUCLEAR BANANA DETONATED");
+
+    flashScreen("rgba(255,255,255,0.7)");
+
+    enemies.forEach(enemy => {
+      enemy.el.remove();
+    });
+
+    score += enemies.length;
+    scoreEl.innerText = score;
+
+    enemies.length = 0;
+  }
+
+  // GORILLA INVASION
+  if (e.key.toLowerCase() === "g") {
+
+    say("🦍 GORILLA INVASION");
+
+    for (let i = 0; i < 8; i++) {
+      spawnEnemy();
+    }
+  }
+});
+
+//////////////////////////////
+// LOOP
+//////////////////////////////
+
+function loop() {
+
+  if (!gameOver) {
+
+    updatePlayer();
+    updateBananas();
+    updateEnemies();
+    updatePowerups();
+  }
+
+  requestAnimationFrame(loop);
+}
+
+loop();
+
+</script>
+
+</body>
+</html>
