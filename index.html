@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Banana Reactor</title>
+
+<style>
+
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+
+  background: linear-gradient(to bottom, #7ad67a, #4c9c4c);
+
+  color: white;
+}
+
+#game {
+  width: 100vw;
+  height: 100vh;
+
+  position: relative;
+}
+
+#player {
+  width: 70px;
+  height: 70px;
+
+  background: #ffd54a;
+
+  border-radius: 16px;
+
+  position: absolute;
+
+  bottom: 60px;
+  left: 100px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 40px;
+
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+
+  transition: transform 0.1s linear;
+}
+
+.enemy {
+  width: 60px;
+  height: 60px;
+
+  background: crimson;
+
+  border-radius: 14px;
+
+  position: absolute;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 30px;
+
+  box-shadow: 0 0 12px rgba(0,0,0,0.25);
+
+  animation: enemySpawn 0.2s ease;
+}
+
+.banana {
+  width: 40px;
+  height: 40px;
+
+  position: absolute;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 30px;
+
+  animation: spin 0.5s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes enemySpawn {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+#ui {
+  position: fixed;
+
+  top: 15px;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  background: rgba(0,0,0,0.25);
+
+  padding: 10px 18px;
+
+  border-radius: 12px;
+
+  font-size: 18px;
+
+  z-index: 999;
+}
+
+#tip {
+  position: fixed;
+
+  bottom: 20px;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  background: rgba(0,0,0,0.2);
+
+  padding: 8px 14px;
+
+  border-radius: 10px;
+
+  opacity: 0.85;
+}
+
+#gameOver {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0,0,0,0.8);
+
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  z-index: 9999;
+}
+
+#gameOver button {
+  margin-top: 20px;
+
+  padding: 12px 20px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: #6bd66b;
+
+  color: white;
+
+  font-size: 18px;
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+  <div id="ui">
+    Score: <span id="score">0</span>
+  </div>
+
+  <div id="player">🗿</div>
+
+  <div id="tip">
+    WASD to move • SPACE to launch bananas
+  </div>
+
+  <div id="gameOver">
+    <h1>You got vaporized 💀</h1>
+    <button onclick="location.reload()">Restart</button>
+  </div>
+
+</div>
+
+<script>
+
+const game = document.getElementById("game");
+const player = document.getElementById("player");
+const scoreEl = document.getElementById("score");
+const gameOverScreen = document.getElementById("gameOver");
+
+let score = 0;
+let gameOver = false;
+
+let playerX = 100;
+let playerY = window.innerHeight - 150;
+
+const keys = {};
+
+const enemies = [];
+const bananas = [];
+
+//////////////////////////
+// INPUT
+//////////////////////////
+
+document.addEventListener("keydown", e => {
+
+  keys[e.key.toLowerCase()] = true;
+
+  if (e.code === "Space") {
+    shootBanana();
+  }
+});
+
+document.addEventListener("keyup", e => {
+  keys[e.key.toLowerCase()] = false;
+});
+
+//////////////////////////
+// PLAYER
+//////////////////////////
+
+function updatePlayer() {
+
+  if (keys["w"]) playerY -= 6;
+  if (keys["s"]) playerY += 6;
+  if (keys["a"]) playerX -= 6;
+  if (keys["d"]) playerX += 6;
+
+  playerX = Math.max(0, Math.min(window.innerWidth - 70, playerX));
+  playerY = Math.max(0, Math.min(window.innerHeight - 70, playerY));
+
+  player.style.left = playerX + "px";
+  player.style.top = playerY + "px";
+}
+
+//////////////////////////
+// BANANAS
+//////////////////////////
+
+function shootBanana() {
+
+  if (gameOver) return;
+
+  const b = document.createElement("div");
+
+  b.className = "banana";
+  b.innerText = "🍌";
+
+  game.appendChild(b);
+
+  const banana = {
+    el: b,
+    x: playerX + 20,
+    y: playerY,
+    speed: 10
+  };
+
+  bananas.push(banana);
+}
+
+function updateBananas() {
+
+  bananas.forEach((b, i) => {
+
+    b.y -= b.speed;
+
+    b.el.style.left = b.x + "px";
+    b.el.style.top = b.y + "px";
+
+    if (b.y < -50) {
+
+      b.el.remove();
+
+      bananas.splice(i, 1);
+    }
+  });
+}
+
+//////////////////////////
+// ENEMIES
+//////////////////////////
+
+function spawnEnemy() {
+
+  if (gameOver) return;
+
+  const e = document.createElement("div");
+
+  e.className = "enemy";
+
+  const emojis = ["😡", "👹", "🤖", "💀"];
+
+  e.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+
+  game.appendChild(e);
+
+  enemies.push({
+    el: e,
+    x: Math.random() * (window.innerWidth - 60),
+    y: -60,
+    speed: 2 + Math.random() * 2
+  });
+}
+
+setInterval(spawnEnemy, 900);
+
+function updateEnemies() {
+
+  enemies.forEach((enemy, ei) => {
+
+    enemy.y += enemy.speed;
+
+    enemy.el.style.left = enemy.x + "px";
+    enemy.el.style.top = enemy.y + "px";
+
+    // PLAYER COLLISION
+    if (
+      enemy.x < playerX + 60 &&
+      enemy.x + 60 > playerX &&
+      enemy.y < playerY + 60 &&
+      enemy.y + 60 > playerY
+    ) {
+      die();
+    }
+
+    // BANANA COLLISION
+    bananas.forEach((banana, bi) => {
+
+      if (
+        banana.x < enemy.x + 50 &&
+        banana.x + 30 > enemy.x &&
+        banana.y < enemy.y + 50 &&
+        banana.y + 30 > enemy.y
+      ) {
+
+        enemy.el.remove();
+        enemies.splice(ei, 1);
+
+        banana.el.remove();
+        bananas.splice(bi, 1);
+
+        score++;
+
+        scoreEl.innerText = score;
+      }
+    });
+
+    if (enemy.y > window.innerHeight + 100) {
+
+      enemy.el.remove();
+
+      enemies.splice(ei, 1);
+    }
+  });
+}
+
+//////////////////////////
+// GAME OVER
+//////////////////////////
+
+function die() {
+
+  if (gameOver) return;
+
+  gameOver = true;
+
+  gameOverScreen.style.display = "flex";
+}
+
+//////////////////////////
+// GAME LOOP
+//////////////////////////
+
+function loop() {
+
+  if (!gameOver) {
+
+    updatePlayer();
+    updateBananas();
+    updateEnemies();
+  }
+
+  requestAnimationFrame(loop);
+}
+
+loop();
+
+</script>
+
+</body>
+</html>
