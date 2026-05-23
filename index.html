@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Banana Reactor</title>
+<title>BANANA REACTOR ULTRA</title>
 
 <style>
 
@@ -11,67 +11,169 @@ body {
   margin: 0;
   overflow: hidden;
   font-family: Arial, sans-serif;
-
-  background: linear-gradient(to bottom, #7ad67a, #4c9c4c);
-
+  background: linear-gradient(to bottom, #89e189, #4f9e4f);
   color: white;
 }
 
 #game {
   width: 100vw;
   height: 100vh;
-
   position: relative;
+  overflow: hidden;
 }
 
-#player {
-  width: 70px;
-  height: 70px;
+/* BACKGROUND PARTICLES */
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  animation: floatUp linear infinite;
+}
 
-  background: #ffd54a;
+@keyframes floatUp {
+  from {
+    transform: translateY(0px);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(-120vh);
+    opacity: 0;
+  }
+}
+
+/* UI */
+#ui {
+  position: fixed;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  display: flex;
+  gap: 20px;
+
+  background: rgba(0,0,0,0.25);
+  padding: 10px 18px;
+  border-radius: 14px;
+
+  z-index: 999;
+
+  backdrop-filter: blur(4px);
+}
+
+#subtitle {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  background: rgba(0,0,0,0.3);
+
+  padding: 8px 14px;
+
+  border-radius: 12px;
+
+  font-size: 15px;
+
+  z-index: 999;
+
+  pointer-events: none;
+}
+
+/* PLAYER */
+#player {
+  width: 75px;
+  height: 75px;
+
+  position: absolute;
+
+  border-radius: 18px;
+
+  background: linear-gradient(145deg, #ffe16b, #ffc400);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 42px;
+
+  box-shadow:
+    0 0 20px rgba(0,0,0,0.35),
+    inset 0 0 12px rgba(255,255,255,0.3);
+
+  transition: transform 0.08s linear;
+}
+
+.playerDash {
+  animation: dash 0.2s ease;
+}
+
+@keyframes dash {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ENEMIES */
+.enemy {
+  width: 65px;
+  height: 65px;
+
+  position: absolute;
 
   border-radius: 16px;
 
-  position: absolute;
-
-  bottom: 60px;
-  left: 100px;
-
   display: flex;
   justify-content: center;
   align-items: center;
 
-  font-size: 40px;
+  font-size: 34px;
+
+  background: linear-gradient(145deg, crimson, #8f0000);
 
   box-shadow: 0 0 15px rgba(0,0,0,0.3);
 
-  transition: transform 0.1s linear;
+  animation: enemySpawn 0.25s ease;
 }
 
-.enemy {
-  width: 60px;
-  height: 60px;
-
-  background: crimson;
-
-  border-radius: 14px;
-
-  position: absolute;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  font-size: 30px;
-
-  box-shadow: 0 0 12px rgba(0,0,0,0.25);
-
-  animation: enemySpawn 0.2s ease;
+.fastEnemy {
+  background: linear-gradient(145deg, #00d5ff, #005f73);
 }
 
+.tankEnemy {
+  background: linear-gradient(145deg, #6c5ce7, #3f2b96);
+}
+
+@keyframes enemySpawn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* BANANAS */
 .banana {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
 
   position: absolute;
 
@@ -79,9 +181,9 @@ body {
   justify-content: center;
   align-items: center;
 
-  font-size: 30px;
+  font-size: 32px;
 
-  animation: spin 0.5s linear infinite;
+  animation: spin 0.45s linear infinite;
 }
 
 @keyframes spin {
@@ -94,77 +196,86 @@ body {
   }
 }
 
-@keyframes enemySpawn {
+/* EXPLOSION */
+.explosion {
+  position: absolute;
+
+  width: 20px;
+  height: 20px;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.8);
+
+  animation: boom 0.4s ease forwards;
+}
+
+@keyframes boom {
   from {
-    transform: scale(0.7);
-    opacity: 0;
+    transform: scale(0.5);
+    opacity: 1;
   }
 
   to {
-    transform: scale(1);
-    opacity: 1;
+    transform: scale(8);
+    opacity: 0;
   }
 }
 
-#ui {
-  position: fixed;
+/* POWERUP */
+.powerup {
+  width: 60px;
+  height: 60px;
 
-  top: 15px;
-  left: 50%;
+  position: absolute;
 
-  transform: translateX(-50%);
+  border-radius: 14px;
 
-  background: rgba(0,0,0,0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-  padding: 10px 18px;
+  font-size: 30px;
 
-  border-radius: 12px;
+  background: linear-gradient(145deg, #ffffff, #cfcfcf);
 
-  font-size: 18px;
-
-  z-index: 999;
+  animation: floaty 1s ease-in-out infinite alternate;
 }
 
-#tip {
-  position: fixed;
+@keyframes floaty {
+  from {
+    transform: translateY(0px);
+  }
 
-  bottom: 20px;
-  left: 50%;
-
-  transform: translateX(-50%);
-
-  background: rgba(0,0,0,0.2);
-
-  padding: 8px 14px;
-
-  border-radius: 10px;
-
-  opacity: 0.85;
+  to {
+    transform: translateY(-10px);
+  }
 }
 
+/* GAME OVER */
 #gameOver {
   position: fixed;
   inset: 0;
-
-  background: rgba(0,0,0,0.8);
 
   display: none;
   justify-content: center;
   align-items: center;
   flex-direction: column;
 
-  z-index: 9999;
+  background: rgba(0,0,0,0.8);
+
+  z-index: 99999;
 }
 
 #gameOver button {
   margin-top: 20px;
 
-  padding: 12px 20px;
+  padding: 12px 22px;
 
   border: none;
   border-radius: 12px;
 
-  background: #6bd66b;
+  background: #69d769;
 
   color: white;
 
@@ -174,25 +285,48 @@ body {
   cursor: pointer;
 }
 
+/* MOBILE */
+@media (max-width: 700px) {
+
+  #player {
+    width: 60px;
+    height: 60px;
+    font-size: 34px;
+  }
+
+  .enemy {
+    width: 50px;
+    height: 50px;
+    font-size: 26px;
+  }
+
+  .banana {
+    font-size: 24px;
+  }
+
+  #ui {
+    font-size: 14px;
+  }
+}
+
 </style>
 </head>
-
 <body>
 
 <div id="game">
 
   <div id="ui">
-    Score: <span id="score">0</span>
+    <div>Score: <span id="score">0</span></div>
+    <div>HP: <span id="hp">3</span></div>
+    <div>Wave: <span id="wave">1</span></div>
   </div>
+
+  <div id="subtitle">WASD to move • SPACE to launch bananas • SHIFT to dash</div>
 
   <div id="player">🗿</div>
 
-  <div id="tip">
-    WASD to move • SPACE to launch bananas
-  </div>
-
   <div id="gameOver">
-    <h1>You got vaporized 💀</h1>
+    <h1>You became potassium 💀</h1>
     <button onclick="location.reload()">Restart</button>
   </div>
 
@@ -203,29 +337,53 @@ body {
 const game = document.getElementById("game");
 const player = document.getElementById("player");
 const scoreEl = document.getElementById("score");
+const hpEl = document.getElementById("hp");
+const waveEl = document.getElementById("wave");
+const subtitle = document.getElementById("subtitle");
 const gameOverScreen = document.getElementById("gameOver");
 
 let score = 0;
+let hp = 3;
+let wave = 1;
+
 let gameOver = false;
 
-let playerX = 100;
-let playerY = window.innerHeight - 150;
-
-const keys = {};
+let playerX = 120;
+let playerY = window.innerHeight - 180;
 
 const enemies = [];
 const bananas = [];
+const powerups = [];
 
-//////////////////////////
+const keys = {};
+
+let bananaCooldown = false;
+let dashCooldown = false;
+
+//////////////////////////////
+// SUBTITLE SYSTEM
+//////////////////////////////
+
+function say(text) {
+  subtitle.innerText = text;
+}
+
+//////////////////////////////
 // INPUT
-//////////////////////////
+//////////////////////////////
 
 document.addEventListener("keydown", e => {
+
+  e.preventDefault();
 
   keys[e.key.toLowerCase()] = true;
 
   if (e.code === "Space") {
     shootBanana();
+  }
+
+  if (e.key === "Shift") {
+    dash();
   }
 });
 
@@ -233,31 +391,56 @@ document.addEventListener("keyup", e => {
   keys[e.key.toLowerCase()] = false;
 });
 
-//////////////////////////
+//////////////////////////////
 // PLAYER
-//////////////////////////
+//////////////////////////////
 
 function updatePlayer() {
 
-  if (keys["w"]) playerY -= 6;
-  if (keys["s"]) playerY += 6;
-  if (keys["a"]) playerX -= 6;
-  if (keys["d"]) playerX += 6;
+  let speed = 5;
 
-  playerX = Math.max(0, Math.min(window.innerWidth - 70, playerX));
-  playerY = Math.max(0, Math.min(window.innerHeight - 70, playerY));
+  if (keys["w"]) playerY -= speed;
+  if (keys["s"]) playerY += speed;
+  if (keys["a"]) playerX -= speed;
+  if (keys["d"]) playerX += speed;
+
+  playerX = Math.max(0, Math.min(window.innerWidth - 75, playerX));
+  playerY = Math.max(0, Math.min(window.innerHeight - 75, playerY));
 
   player.style.left = playerX + "px";
   player.style.top = playerY + "px";
 }
 
-//////////////////////////
+function dash() {
+
+  if (dashCooldown || gameOver) return;
+
+  dashCooldown = true;
+
+  player.classList.add("playerDash");
+
+  playerX += 100;
+
+  setTimeout(() => {
+    player.classList.remove("playerDash");
+  }, 200);
+
+  say("🗿 DASHED LIKE A MANIAC");
+
+  setTimeout(() => {
+    dashCooldown = false;
+  }, 1500);
+}
+
+//////////////////////////////
 // BANANAS
-//////////////////////////
+//////////////////////////////
 
 function shootBanana() {
 
-  if (gameOver) return;
+  if (bananaCooldown || gameOver) return;
+
+  bananaCooldown = true;
 
   const b = document.createElement("div");
 
@@ -266,37 +449,38 @@ function shootBanana() {
 
   game.appendChild(b);
 
-  const banana = {
+  bananas.push({
     el: b,
     x: playerX + 20,
     y: playerY,
     speed: 10
-  };
+  });
 
-  bananas.push(banana);
+  setTimeout(() => {
+    bananaCooldown = false;
+  }, 150);
 }
 
 function updateBananas() {
 
-  bananas.forEach((b, i) => {
+  bananas.forEach((banana, i) => {
 
-    b.y -= b.speed;
+    banana.y -= banana.speed;
 
-    b.el.style.left = b.x + "px";
-    b.el.style.top = b.y + "px";
+    banana.el.style.left = banana.x + "px";
+    banana.el.style.top = banana.y + "px";
 
-    if (b.y < -50) {
+    if (banana.y < -50) {
 
-      b.el.remove();
-
+      banana.el.remove();
       bananas.splice(i, 1);
     }
   });
 }
 
-//////////////////////////
+//////////////////////////////
 // ENEMIES
-//////////////////////////
+//////////////////////////////
 
 function spawnEnemy() {
 
@@ -306,21 +490,38 @@ function spawnEnemy() {
 
   e.className = "enemy";
 
-  const emojis = ["😡", "👹", "🤖", "💀"];
+  const types = [
+    { emoji: "😡", speed: 2, hp: 1 },
+    { emoji: "🤖", speed: 3.5, hp: 1, class: "fastEnemy" },
+    { emoji: "👹", speed: 1.4, hp: 3, class: "tankEnemy" }
+  ];
 
-  e.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+  const type = types[Math.floor(Math.random() * types.length)];
+
+  e.innerText = type.emoji;
+
+  if (type.class) e.classList.add(type.class);
 
   game.appendChild(e);
 
   enemies.push({
     el: e,
-    x: Math.random() * (window.innerWidth - 60),
-    y: -60,
-    speed: 2 + Math.random() * 2
+    x: Math.random() * (window.innerWidth - 70),
+    y: -70,
+    speed: type.speed + wave * 0.08,
+    hp: type.hp
   });
 }
 
-setInterval(spawnEnemy, 900);
+setInterval(() => {
+
+  spawnEnemy();
+
+  if (Math.random() < 0.15) {
+    spawnPowerup();
+  }
+
+}, 850);
 
 function updateEnemies() {
 
@@ -331,17 +532,21 @@ function updateEnemies() {
     enemy.el.style.left = enemy.x + "px";
     enemy.el.style.top = enemy.y + "px";
 
-    // PLAYER COLLISION
+    // PLAYER HIT
     if (
       enemy.x < playerX + 60 &&
       enemy.x + 60 > playerX &&
       enemy.y < playerY + 60 &&
       enemy.y + 60 > playerY
     ) {
-      die();
+
+      enemy.el.remove();
+      enemies.splice(ei, 1);
+
+      takeDamage();
     }
 
-    // BANANA COLLISION
+    // BANANA HIT
     bananas.forEach((banana, bi) => {
 
       if (
@@ -351,43 +556,445 @@ function updateEnemies() {
         banana.y + 30 > enemy.y
       ) {
 
-        enemy.el.remove();
-        enemies.splice(ei, 1);
+        enemy.hp--;
 
         banana.el.remove();
         bananas.splice(bi, 1);
 
-        score++;
+        createExplosion(enemy.x, enemy.y);
 
-        scoreEl.innerText = score;
+        if (enemy.hp <= 0) {
+
+          enemy.el.remove();
+          enemies.splice(ei, 1);
+
+          score++;
+
+          if (score % 10 === 0) {
+            wave++;
+            waveEl.innerText = wave;
+            say("⚠️ WAVE " + wave + " HAS ARRIVED");
+          }
+
+          scoreEl.innerText = score;
+        }
       }
     });
+  });
+}
 
-    if (enemy.y > window.innerHeight + 100) {
+//////////////////////////////
+// POWERUPS
+//////////////////////////////
 
-      enemy.el.remove();
+function spawnPowerup() {
 
-      enemies.splice(ei, 1);
+  const p = document.createElement("div");
+
+  p.className = "powerup";
+  p.innerText = "💊";
+
+  game.appendChild(p);
+
+  powerups.push({
+    el: p,
+    x: Math.random() * (window.innerWidth - 60),
+    y: Math.random() * (window.innerHeight - 300)
+  });
+}
+
+function updatePowerups() {
+
+  powerups.forEach((p, i) => {
+
+    p.el.style.left = p.x + "px";
+    p.el.style.top = p.y + "px";
+
+    if (
+      p.x < playerX + 60 &&
+      p.x + 60 > playerX &&
+      p.y < playerY + 60 &&
+      p.y + 60 > playerY
+    ) {
+
+      hp++;
+      hpEl.innerText = hp;
+
+      say("💊 YOU ATE MYSTERY MEDICINE");
+
+      p.el.remove();
+      powerups.splice(i, 1);
     }
   });
 }
 
-//////////////////////////
+//////////////////////////////
+// DAMAGE
+//////////////////////////////
+
+function takeDamage() {
+
+  hp--;
+
+  hpEl.innerText = hp;
+
+  say("💀 OW THAT PROBABLY HURT");
+
+  game.style.transform = "translateX(8px)";
+
+  setTimeout(() => {
+    game.style.transform = "translateX(0px)";
+  }, 80);
+
+  if (hp <= 0) {
+    die();
+  }
+}
+
+//////////////////////////////
+// EXPLOSIONS
+//////////////////////////////
+
+function createExplosion(x, y) {
+
+  const ex = document.createElement("div");
+
+  ex.className = "explosion";
+
+  ex.style.left = x + "px";
+  ex.style.top = y + "px";
+
+  game.appendChild(ex);
+
+  setTimeout(() => {
+    ex.remove();
+  }, 400);
+}
+
+//////////////////////////////
+// PARTICLES
+//////////////////////////////
+
+function createParticles() {
+
+  for (let i = 0; i < 30; i++) {
+
+    const p = document.createElement("div");
+
+    p.className = "particle";
+
+    p.style.left = Math.random() * window.innerWidth + "px";
+    p.style.top = Math.random() * window.innerHeight + "px";
+
+    p.style.animationDuration = 4 + Math.random() * 8 + "s";
+
+    game.appendChild(p);
+  }
+}
+
+createParticles();
+
+//////////////////////////////
 // GAME OVER
-//////////////////////////
+//////////////////////////////
 
 function die() {
 
-  if (gameOver) return;
-
   gameOver = true;
+
+  say("☠️ THE BANANAS HAVE WON");
 
   gameOverScreen.style.display = "flex";
 }
 
-//////////////////////////
-// GAME LOOP
-//////////////////////////
+//////////////////////////////
+// BANANA STORM
+//////////////////////////////
+
+let stormCooldown = false;
+
+function bananaStorm() {
+
+  if (stormCooldown || gameOver) return;
+
+  stormCooldown = true;
+
+  say("🌪️ BANANA STORM ACTIVATED");
+
+  for (let i = 0; i < 25; i++) {
+
+    setTimeout(() => {
+
+      const b = document.createElement("div");
+
+      b.className = "banana";
+      b.innerText = "🍌";
+
+      game.appendChild(b);
+
+      bananas.push({
+        el: b,
+        x: Math.random() * window.innerWidth,
+        y: window.innerHeight,
+        speed: 8 + Math.random() * 5
+      });
+
+    }, i * 40);
+  }
+
+  setTimeout(() => {
+    stormCooldown = false;
+  }, 7000);
+}
+
+//////////////////////////////
+// GOLDEN BANANA
+//////////////////////////////
+
+function spawnGoldenBanana() {
+
+  const g = document.createElement("div");
+
+  g.className = "powerup";
+  g.innerText = "👑🍌";
+
+  game.appendChild(g);
+
+  const golden = {
+    el: g,
+    x: Math.random() * (window.innerWidth - 60),
+    y: Math.random() * (window.innerHeight - 250)
+  };
+
+  powerups.push(golden);
+}
+
+setInterval(() => {
+
+  if (Math.random() < 0.2 && !gameOver) {
+    spawnGoldenBanana();
+  }
+
+}, 9000);
+
+//////////////////////////////
+// BANANA KING BOSS
+//////////////////////////////
+
+function spawnBoss() {
+
+  say("👑 THE BANANA KING HAS ARRIVED");
+
+  const boss = document.createElement("div");
+
+  boss.className = "enemy tankEnemy";
+
+  boss.style.width = "120px";
+  boss.style.height = "120px";
+  boss.style.fontSize = "60px";
+
+  boss.innerText = "🦍";
+
+  game.appendChild(boss);
+
+  enemies.push({
+    el: boss,
+    x: window.innerWidth / 2 - 60,
+    y: -120,
+    speed: 1,
+    hp: 25,
+    boss: true
+  });
+}
+
+//////////////////////////////
+// MEME EVENTS
+//////////////////////////////
+
+const randomMessages = [
+  "🍌 potassium overload detected",
+  "🗿 the monkey council is watching",
+  "💀 somebody slipped on a banana",
+  "👹 enemies are evolving",
+  "🤖 banana reactor stability: questionable"
+];
+
+setInterval(() => {
+
+  if (!gameOver) {
+
+    say(randomMessages[Math.floor(Math.random() * randomMessages.length)]);
+  }
+
+}, 12000);
+
+//////////////////////////////
+// LASER BANANA MODE
+//////////////////////////////
+
+let laserMode = false;
+
+function activateLaserMode() {
+
+  if (laserMode || gameOver) return;
+
+  laserMode = true;
+
+  say("🔫 LASER BANANA MODE ACTIVATED");
+
+  player.style.boxShadow = "0 0 35px yellow";
+
+  setTimeout(() => {
+
+    laserMode = false;
+
+    player.style.boxShadow = `
+      0 0 20px rgba(0,0,0,0.35),
+      inset 0 0 12px rgba(255,255,255,0.3)
+    `;
+
+    say("🍌 laser bananas depleted");
+
+  }, 8000);
+}
+
+//////////////////////////////
+// METEOR BANANA
+//////////////////////////////
+
+function spawnMeteorBanana() {
+
+  const meteor = document.createElement("div");
+
+  meteor.className = "banana";
+  meteor.innerText = "☄️🍌";
+
+  game.appendChild(meteor);
+
+  let mx = Math.random() * window.innerWidth;
+  let my = -100;
+
+  const interval = setInterval(() => {
+
+    if (gameOver) {
+      clearInterval(interval);
+      return;
+    }
+
+    my += 12;
+
+    meteor.style.left = mx + "px";
+    meteor.style.top = my + "px";
+
+    enemies.forEach((enemy, ei) => {
+
+      if (
+        mx < enemy.x + 70 &&
+        mx + 40 > enemy.x &&
+        my < enemy.y + 70 &&
+        my + 40 > enemy.y
+      ) {
+
+        createExplosion(enemy.x, enemy.y);
+
+        enemy.el.remove();
+        enemies.splice(ei, 1);
+
+        score += 3;
+        scoreEl.innerText = score;
+      }
+    });
+
+    if (my > window.innerHeight + 100) {
+      meteor.remove();
+      clearInterval(interval);
+    }
+
+  }, 16);
+}
+
+setInterval(() => {
+
+  if (Math.random() < 0.25 && !gameOver) {
+    spawnMeteorBanana();
+  }
+
+}, 7000);
+
+//////////////////////////////
+// SCREEN FLASHES
+//////////////////////////////
+
+function flashScreen(color) {
+
+  const flash = document.createElement("div");
+
+  flash.style.position = "fixed";
+  flash.style.inset = "0";
+  flash.style.background = color;
+  flash.style.opacity = "0.35";
+  flash.style.pointerEvents = "none";
+  flash.style.zIndex = "999999";
+
+  flash.style.animation = "boom 0.3s ease forwards";
+
+  document.body.appendChild(flash);
+
+  setTimeout(() => {
+    flash.remove();
+  }, 300);
+}
+
+//////////////////////////////
+// MONKEY RAGE MODE
+//////////////////////////////
+
+function monkeyRage() {
+
+  say("🦍 MONKEY RAGE ACTIVATED");
+
+  for (let i = 0; i < 15; i++) {
+
+    setTimeout(() => {
+      spawnEnemy();
+    }, i * 100);
+  }
+}
+
+setInterval(() => {
+
+  if (Math.random() < 0.12 && !gameOver) {
+    monkeyRage();
+  }
+
+}, 18000);
+
+//////////////////////////////
+// SECRET KEYS
+//////////////////////////////
+
+document.addEventListener("keydown", e => {
+
+  if (e.key.toLowerCase() === "b") {
+    bananaStorm();
+  }
+
+  if (e.key.toLowerCase() === "k") {
+    spawnBoss();
+  }
+
+  if (e.key.toLowerCase() === "l") {
+    activateLaserMode();
+  }
+
+  if (e.key.toLowerCase() === "m") {
+    spawnMeteorBanana();
+  }
+});
+
+//////////////////////////////
+// LOOP
+//////////////////////////////
 
 function loop() {
 
@@ -396,6 +1003,7 @@ function loop() {
     updatePlayer();
     updateBananas();
     updateEnemies();
+    updatePowerups();
   }
 
   requestAnimationFrame(loop);
