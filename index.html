@@ -67,6 +67,27 @@ body {
   backdrop-filter: blur(4px);
 }
 
+.gorillaBoss {
+  background: linear-gradient(145deg, #111111, #444444) !important;
+  box-shadow: 0 0 30px rgba(255,0,0,0.45) !important;
+}
+
+#crosshair {
+  font-size: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: fixed;
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(255,255,255,0.8);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 999999;
+  transform: translate(-50%, -50%);
+}
+
 #subtitle {
   position: fixed;
   bottom: 18px;
@@ -325,6 +346,8 @@ body {
 
   <div id="player">🗿</div>
 
+  <div id="crosshair">🍌</div>
+
   <div id="gameOver">
     <h1>You became potassium 💀</h1>
     <button onclick="location.reload()">Restart</button>
@@ -341,6 +364,12 @@ const hpEl = document.getElementById("hp");
 const waveEl = document.getElementById("wave");
 const subtitle = document.getElementById("subtitle");
 const gameOverScreen = document.getElementById("gameOver");
+const crosshair = document.getElementById("crosshair");
+
+window.addEventListener("mousemove", e => {
+  crosshair.style.left = e.clientX + "px";
+  crosshair.style.top = e.clientY + "px";
+});
 
 let score = 0;
 let hp = 3;
@@ -436,41 +465,79 @@ function dash() {
 // BANANAS
 //////////////////////////////
 
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+
+window.addEventListener("mousemove", e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+window.addEventListener("touchmove", e => {
+  mouseX = e.touches[0].clientX;
+  mouseY = e.touches[0].clientY;
+});
+
 function shootBanana() {
 
-  if (bananaCooldown || gameOver) return;
-
-  bananaCooldown = true;
+  if ((bananaCooldown && !laserMode) || gameOver) return;
 
   const b = document.createElement("div");
 
   b.className = "banana";
-  b.innerText = "🍌";
+  b.innerText = laserMode ? "⚡🍌" : "🍌";
 
   game.appendChild(b);
 
+  const startX = playerX + 35;
+  const startY = playerY + 20;
+
+  const dx = mouseX - startX;
+  const dy = mouseY - startY;
+
+  const dist = Math.hypot(dx, dy);
+
+  const speed = laserMode ? 18 : 10;
+
   bananas.push({
     el: b,
-    x: playerX + 20,
-    y: playerY,
-    speed: 10
+    x: startX,
+    y: startY,
+    vx: (dx / dist) * speed,
+    vy: (dy / dist) * speed,
+    laser: laserMode
   });
 
-  setTimeout(() => {
-    bananaCooldown = false;
-  }, 150);
+  if (!laserMode) {
+    bananaCooldown = true;
+
+    setTimeout(() => {
+      bananaCooldown = false;
+    }, 150);
+  }
 }
 
 function updateBananas() {
 
+  // AUTO FIRE DURING LASER MODE
+  if (laserMode && Math.random() < 0.35) {
+    shootBanana();
+  }
+
   bananas.forEach((banana, i) => {
 
-    banana.y -= banana.speed;
+    banana.x += banana.vx;
+    banana.y += banana.vy;
 
     banana.el.style.left = banana.x + "px";
     banana.el.style.top = banana.y + "px";
 
-    if (banana.y < -50) {
+    if (
+      banana.x < -100 ||
+      banana.x > window.innerWidth + 100 ||
+      banana.y < -100 ||
+      banana.y > window.innerHeight + 100
+    ) {
 
       banana.el.remove();
       bananas.splice(i, 1);
@@ -493,7 +560,8 @@ function spawnEnemy() {
   const types = [
     { emoji: "😡", speed: 2, hp: 1 },
     { emoji: "🤖", speed: 3.5, hp: 1, class: "fastEnemy" },
-    { emoji: "👹", speed: 1.4, hp: 3, class: "tankEnemy" }
+    { emoji: "👹", speed: 1.4, hp: 3, class: "tankEnemy" },
+    { emoji: "🦍", speed: 4.5, hp: 8, class: "gorillaBoss", gorilla: true }
   ];
 
   const type = types[Math.floor(Math.random() * types.length)];
@@ -509,7 +577,8 @@ function spawnEnemy() {
     x: Math.random() * (window.innerWidth - 70),
     y: -70,
     speed: type.speed + wave * 0.08,
-    hp: type.hp
+    hp: type.hp,
+    gorilla: type.gorilla || false
   });
 }
 
@@ -527,7 +596,21 @@ function updateEnemies() {
 
   enemies.forEach((enemy, ei) => {
 
-    enemy.y += enemy.speed;
+    if (enemy.gorilla) {
+
+      const dx = playerX - enemy.x;
+      const dy = playerY - enemy.y;
+
+      const dist = Math.hypot(dx, dy);
+
+      enemy.x += (dx / dist) * enemy.speed;
+      enemy.y += (dy / dist) * enemy.speed;
+
+      enemy.el.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
+
+    } else {
+      enemy.y += enemy.speed;
+    }
 
     enemy.el.style.left = enemy.x + "px";
     enemy.el.style.top = enemy.y + "px";
@@ -556,7 +639,7 @@ function updateEnemies() {
         banana.y + 30 > enemy.y
       ) {
 
-        enemy.hp--;
+        enemy.hp -= banana.laser ? 3 : 1;
 
         banana.el.remove();
         bananas.splice(bi, 1);
@@ -565,10 +648,41 @@ function updateEnemies() {
 
         if (enemy.hp <= 0) {
 
+          flashScreen("rgba(255,255,0,0.4)");
+
+          if (enemy.gorilla) {
+            say("🦍 GORILLA BOY GOT ABSOLUTELY VAPORIZED");
+
+            // REMOVE BODY INSTANTLY TO PREVENT WALLS
+            enemy.el.style.pointerEvents = "none";
+            enemy.el.style.opacity = "0";
+
+            // CHAOS SPLIT BANANAS
+            for (let s = 0; s < 6; s++) {
+
+              const split = document.createElement("div");
+              split.className = "banana";
+              split.innerText = "🍌";
+
+              game.appendChild(split);
+
+              const angle = (Math.PI * 2 / 6) * s;
+
+              bananas.push({
+                el: split,
+                x: enemy.x,
+                y: enemy.y,
+                vx: Math.cos(angle) * 8,
+                vy: Math.sin(angle) * 8,
+                laser: true
+              });
+            }
+          }
+
           enemy.el.remove();
           enemies.splice(ei, 1);
 
-          score++;
+          score += enemy.gorilla ? 10 : 1;
 
           if (score % 10 === 0) {
             wave++;
@@ -922,6 +1036,113 @@ setInterval(() => {
 }, 7000);
 
 //////////////////////////////
+// BLACK HOLE BANANA
+//////////////////////////////
+
+function spawnBlackHole(x, y) {
+
+  const hole = document.createElement("div");
+
+  hole.style.position = "absolute";
+  hole.style.left = x + "px";
+  hole.style.top = y + "px";
+
+  hole.style.width = "120px";
+  hole.style.height = "120px";
+
+  hole.style.borderRadius = "50%";
+
+  hole.style.background = "radial-gradient(circle, black 40%, purple 100%)";
+
+  hole.style.boxShadow = "0 0 40px purple";
+
+  hole.style.zIndex = "999";
+
+  game.appendChild(hole);
+
+  let life = 300;
+
+  const suck = setInterval(() => {
+
+    enemies.forEach((enemy, ei) => {
+
+      const dx = x - enemy.x;
+      const dy = y - enemy.y;
+
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < 300) {
+
+        enemy.x += dx / dist * 4;
+        enemy.y += dy / dist * 4;
+      }
+
+      if (dist < 60) {
+
+        createExplosion(enemy.x, enemy.y);
+
+        enemy.el.remove();
+        enemies.splice(ei, 1);
+
+        score++;
+        scoreEl.innerText = score;
+      }
+    });
+
+    life--;
+
+    if (life <= 0) {
+      clearInterval(suck);
+      hole.remove();
+    }
+
+  }, 16);
+}
+
+//////////////////////////////
+// MONKEY RAIN
+//////////////////////////////
+
+function monkeyRain() {
+
+  say("🐒 MONKEY RAIN HAS STARTED");
+
+  for (let i = 0; i < 40; i++) {
+
+    setTimeout(() => {
+
+      const monkey = document.createElement("div");
+
+      monkey.innerText = "🐒";
+
+      monkey.style.position = "absolute";
+      monkey.style.fontSize = "40px";
+
+      monkey.style.left = Math.random() * window.innerWidth + "px";
+      monkey.style.top = "-50px";
+
+      game.appendChild(monkey);
+
+      let my = -50;
+
+      const fall = setInterval(() => {
+
+        my += 12;
+
+        monkey.style.top = my + "px";
+
+        if (my > window.innerHeight + 100) {
+          monkey.remove();
+          clearInterval(fall);
+        }
+
+      }, 16);
+
+    }, i * 100);
+  }
+}
+
+//////////////////////////////
 // SCREEN FLASHES
 //////////////////////////////
 
@@ -934,84 +1155,4 @@ function flashScreen(color) {
   flash.style.background = color;
   flash.style.opacity = "0.35";
   flash.style.pointerEvents = "none";
-  flash.style.zIndex = "999999";
-
-  flash.style.animation = "boom 0.3s ease forwards";
-
-  document.body.appendChild(flash);
-
-  setTimeout(() => {
-    flash.remove();
-  }, 300);
-}
-
-//////////////////////////////
-// MONKEY RAGE MODE
-//////////////////////////////
-
-function monkeyRage() {
-
-  say("🦍 MONKEY RAGE ACTIVATED");
-
-  for (let i = 0; i < 15; i++) {
-
-    setTimeout(() => {
-      spawnEnemy();
-    }, i * 100);
-  }
-}
-
-setInterval(() => {
-
-  if (Math.random() < 0.12 && !gameOver) {
-    monkeyRage();
-  }
-
-}, 18000);
-
-//////////////////////////////
-// SECRET KEYS
-//////////////////////////////
-
-document.addEventListener("keydown", e => {
-
-  if (e.key.toLowerCase() === "b") {
-    bananaStorm();
-  }
-
-  if (e.key.toLowerCase() === "k") {
-    spawnBoss();
-  }
-
-  if (e.key.toLowerCase() === "l") {
-    activateLaserMode();
-  }
-
-  if (e.key.toLowerCase() === "m") {
-    spawnMeteorBanana();
-  }
-});
-
-//////////////////////////////
-// LOOP
-//////////////////////////////
-
-function loop() {
-
-  if (!gameOver) {
-
-    updatePlayer();
-    updateBananas();
-    updateEnemies();
-    updatePowerups();
-  }
-
-  requestAnimationFrame(loop);
-}
-
-loop();
-
-</script>
-
-</body>
-</html>
+  flash.style.zIn
