@@ -1,1154 +1,903 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>BANANA REACTOR ULTRA</title>
-
-<style>
-
-body {
-  margin: 0;
-  overflow: hidden;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(to bottom, #89e189, #4f9e4f);
-  color: white;
-}
-
-#game {
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-  overflow: hidden;
-}
-
-/* BACKGROUND PARTICLES */
-.particle {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.15);
-  animation: floatUp linear infinite;
-}
-
-@keyframes floatUp {
-  from {
-    transform: translateY(0px);
-    opacity: 0;
-  }
-
-  20% {
-    opacity: 1;
-  }
-
-  to {
-    transform: translateY(-120vh);
-    opacity: 0;
-  }
-}
-
-/* UI */
-#ui {
-  position: fixed;
-  top: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-
-  display: flex;
-  gap: 20px;
-
-  background: rgba(0,0,0,0.25);
-  padding: 10px 18px;
-  border-radius: 14px;
-
-  z-index: 999;
-
-  backdrop-filter: blur(4px);
-}
-
-.gorillaBoss {
-  background: linear-gradient(145deg, #111111, #444444) !important;
-  box-shadow: 0 0 30px rgba(255,0,0,0.45) !important;
-}
-
-#crosshair {
-  font-size: 28px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  position: fixed;
-  width: 28px;
-  height: 28px;
-  border: 2px solid rgba(255,255,255,0.8);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 999999;
-  transform: translate(-50%, -50%);
-}
-
-#subtitle {
-  position: fixed;
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-
-  background: rgba(0,0,0,0.3);
-
-  padding: 8px 14px;
-
-  border-radius: 12px;
-
-  font-size: 15px;
-
-  z-index: 999;
-
-  pointer-events: none;
-}
-
-/* PLAYER */
-#player {
-  width: 75px;
-  height: 75px;
-
-  position: absolute;
-
-  border-radius: 18px;
-
-  background: linear-gradient(145deg, #ffe16b, #ffc400);
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  font-size: 42px;
-
-  box-shadow:
-    0 0 20px rgba(0,0,0,0.35),
-    inset 0 0 12px rgba(255,255,255,0.3);
-
-  transition: transform 0.08s linear;
-}
-
-.playerDash {
-  animation: dash 0.2s ease;
-}
-
-@keyframes dash {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.15);
-  }
-
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* ENEMIES */
-.enemy {
-  width: 65px;
-  height: 65px;
-
-  position: absolute;
-
-  border-radius: 16px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  font-size: 34px;
-
-  background: linear-gradient(145deg, crimson, #8f0000);
-
-  box-shadow: 0 0 15px rgba(0,0,0,0.3);
-
-  animation: enemySpawn 0.25s ease;
-}
-
-.fastEnemy {
-  background: linear-gradient(145deg, #00d5ff, #005f73);
-}
-
-.tankEnemy {
-  background: linear-gradient(145deg, #6c5ce7, #3f2b96);
-}
-
-@keyframes enemySpawn {
-  from {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* BANANAS */
-.banana {
-  width: 45px;
-  height: 45px;
-
-  position: absolute;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  font-size: 32px;
-
-  animation: spin 0.45s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* EXPLOSION */
-.explosion {
-  position: absolute;
-
-  width: 20px;
-  height: 20px;
-
-  border-radius: 50%;
-
-  background: rgba(255,255,255,0.8);
-
-  animation: boom 0.4s ease forwards;
-}
-
-@keyframes boom {
-  from {
-    transform: scale(0.5);
-    opacity: 1;
-  }
-
-  to {
-    transform: scale(8);
-    opacity: 0;
-  }
-}
-
-/* POWERUP */
-.powerup {
-  width: 60px;
-  height: 60px;
-
-  position: absolute;
-
-  border-radius: 14px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  font-size: 30px;
-
-  background: linear-gradient(145deg, #ffffff, #cfcfcf);
-
-  animation: floaty 1s ease-in-out infinite alternate;
-}
-
-@keyframes floaty {
-  from {
-    transform: translateY(0px);
-  }
-
-  to {
-    transform: translateY(-10px);
-  }
-}
-
-/* GAME OVER */
-#gameOver {
-  position: fixed;
-  inset: 0;
-
-  display: none;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-
-  background: rgba(0,0,0,0.8);
-
-  z-index: 99999;
-}
-
-#gameOver button {
-  margin-top: 20px;
-
-  padding: 12px 22px;
-
-  border: none;
-  border-radius: 12px;
-
-  background: #69d769;
-
-  color: white;
-
-  font-size: 18px;
-  font-weight: bold;
-
-  cursor: pointer;
-}
-
-/* MOBILE */
-@media (max-width: 700px) {
-
-  #player {
-    width: 60px;
-    height: 60px;
-    font-size: 34px;
-  }
-
-  .enemy {
-    width: 50px;
-    height: 50px;
-    font-size: 26px;
-  }
-
-  .banana {
-    font-size: 24px;
-  }
-
-  #ui {
-    font-size: 14px;
-  }
-}
-
-</style>
+    <title>Chaos Shooter | Final Stable</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FFCC00',
+                        redTeam: '#FF3333',
+                        blueTeam: '#3366FF',
+                        dark: '#1A1A1A',
+                        panel: 'rgba(20, 20, 20, 0.85)',
+                        glass: 'rgba(255, 255, 255, 0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow { text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+            .pixel { image-rendering: pixelated; image-rendering: crisp-edges; }
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * { margin:0; padding:0; box-sizing:border-box; outline: none !important; border: none !important; }
+        html, body { 
+            @apply bg-dark h-screen w-screen overflow-hidden fixed touch-none select-none;
+            font-family: 'Arial', sans-serif;
+            cursor: none !important;
+        }
+
+        .screen {
+            @apply absolute inset-0 flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none z-[1000] px-4;
+            background: radial-gradient(circle at center, #2a2a2a 0%, #111 100%);
+        }
+        .screen.active { @apply opacity-100 pointer-events-auto; }
+
+        #gameContainer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: calc(100vw * 9 / 16);
+            max-height: 100vh;
+            max-width: calc(100vh * 16 / 9);
+            overflow: hidden;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F7FF 100%);
+        }
+
+        #gameCanvas { width:100%; height:100%; display:block; }
+
+        .ui { position:absolute; z-index:10000; pointer-events:none; user-select:none; }
+        .ui.interactive { pointer-events:auto; }
+
+        #crosshair {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            width: 28px;
+            height: 28px;
+            margin: -14px 0 0 -14px;
+            z-index: 99999 !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: none !important;
+            transition: none !important;
+        }
+    </style>
 </head>
-<body>
+<body class="text-white">
 
-<div id="game">
-
-  <div id="ui">
-    <div>Score: <span id="score">0</span></div>
-    <div>HP: <span id="hp">3</span></div>
-    <div>Wave: <span id="wave">1</span></div>
-  </div>
-
-  <div id="subtitle">WASD to move • SPACE to launch bananas • SHIFT to dash</div>
-
-  <div id="player">🗿</div>
-
-  <div id="crosshair">🍌</div>
-
-  <div id="gameOver">
-    <h1>You became potassium 💀</h1>
-    <button onclick="location.reload()">Restart</button>
-  </div>
-
+<!-- DEVICE SELECTION -->
+<div id="deviceScreen" class="screen active">
+    <div class="text-center mb-8">
+        <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-[Press Start 2P] text-primary mb-4 text-shadow">CHAOS SHOOTER</h1>
+        <p class="text-lg text-white/80">How are you playing?</p>
+    </div>
+    <div class="flex flex-col gap-4 w-full max-w-xs">
+        <button onclick="setDevice('pc')" class="bg-primary text-black font-bold py-4 px-8 rounded-xl text-lg hover:scale-105 active:scale-95 transition-all">
+            <i class="fa fa-desktop mr-2"></i> PC / LAPTOP
+        </button>
+        <button onclick="setDevice('mobile')" class="bg-primary text-black font-bold py-4 px-8 rounded-xl text-lg hover:scale-105 active:scale-95 transition-all">
+            <i class="fa fa-mobile-phone mr-2"></i> MOBILE / TABLET
+        </button>
+    </div>
 </div>
 
+<!-- LOGIN -->
+<div id="loginScreen" class="screen">
+    <div class="bg-panel backdrop-blur-lg rounded-2xl p-8 w-full max-w-md">
+        <h2 class="text-3xl font-bold text-center mb-6 text-primary" id="loginTitle">LOGIN</h2>
+        <input type="text" id="user" placeholder="👤 Username" maxlength="12" class="w-full bg-glass rounded-lg px-4 py-3 mb-3">
+        <input type="password" id="pass" placeholder="🔒 Password" maxlength="20" class="w-full bg-glass rounded-lg px-4 py-3 mb-3">
+        <div class="text-red-400 text-sm h-6 text-center" id="errorText"></div>
+        <button onclick="handleLogin()" class="w-full bg-primary text-black font-bold py-3 rounded-lg mb-3 hover:shadow-lg transition-all">CONTINUE</button>
+        <button onclick="toggleMode()" class="w-full bg-white/10 hover:bg-white/20 py-2 rounded-lg text-sm transition-all">Switch to Register</button>
+    </div>
+</div>
+
+<!-- MAIN MENU -->
+<div id="homeScreen" class="screen">
+    <div class="text-center mb-6">
+        <h1 class="text-[clamp(3rem,8vw,5rem)] font-[Press Start 2P] text-primary mb-4 text-shadow">CHAOS SHOOTER</h1>
+        <p class="text-xl text-white/70">Ultimate 2D Battle Arena</p>
+        <p class="text-sm text-white/60 mt-2">Logged in as: <span class="text-primary font-bold" id="currentUserDisplay"></span></p>
+    </div>
+    <div class="flex flex-col gap-4 w-full max-w-xs">
+        <button onclick="startSolo()" class="bg-green-500 hover:bg-green-400 text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg hover:scale-105 active:scale-95 transition-all">
+            <i class="fa fa-user mr-2"></i> SOLO MODE
+        </button>
+        <button onclick="goMultiplayer()" class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg hover:scale-105 active:scale-95 transition-all">
+            <i class="fa fa-users mr-2"></i> MULTIPLAYER
+        </button>
+        <button onclick="switchAccount()" class="bg-gray-500 hover:bg-gray-400 text-white font-bold py-3 px-6 rounded-lg text-base shadow-lg hover:scale-105 active:scale-95 transition-all">
+            <i class="fa fa-exchange mr-2"></i> SWITCH ACCOUNT
+        </button>
+    </div>
+</div>
+
+<!-- MULTIPLAYER LOBBY -->
+<div id="multiplayerLobby" class="screen">
+    <div class="bg-panel backdrop-blur-lg rounded-2xl p-8 w-full max-w-lg">
+        <h2 class="text-3xl font-bold text-center mb-4 text-blue-400">MULTIPLAYER LOBBY</h2>
+        <div id="roomInfo" class="text-center text-xl font-mono text-green-400 mb-2"></div>
+        <div id="status" class="text-center text-sm h-6 mb-4 text-green-300"></div>
+        
+        <div class="mb-5">
+            <p class="text-center text-sm mb-2">First to how many wins?</p>
+            <div class="flex justify-center gap-2">
+                <button onclick="setRounds(3)" class="round-btn bg-glass hover:bg-glass/60 py-2 px-4 rounded">3</button>
+                <button onclick="setRounds(5)" class="round-btn bg-glass hover:bg-glass/60 py-2 px-4 rounded">5</button>
+                <button onclick="setRounds(7)" class="round-btn bg-glass hover:bg-glass/60 py-2 px-4 rounded">7</button>
+                <button onclick="setRounds(10)" class="round-btn bg-glass hover:bg-glass/60 py-2 px-4 rounded">10</button>
+            </div>
+            <p class="text-center text-xs mt-1">Current: <span id="roundLimitText">3</span> rounds</p>
+        </div>
+
+        <div class="flex justify-center gap-4 mb-6">
+            <button onclick="selectTeam('red')" class="team-btn bg-redTeam/80 hover:bg-redTeam py-3 px-6 rounded-lg font-bold">🔴 RED TEAM</button>
+            <button onclick="selectTeam('blue')" class="team-btn bg-blueTeam/80 hover:bg-blueTeam py-3 px-6 rounded-lg font-bold">🔵 BLUE TEAM</button>
+        </div>
+
+        <div id="powerupChoice" class="hidden mb-5 p-3 bg-yellow-500/20 rounded-lg text-center">
+            <p class="text-sm mb-2">You lost! Choose team power-up:</p>
+            <div class="flex gap-2 flex-wrap justify-center">
+                <button onclick="choosePowerup('speed')" class="bg-glass hover:bg-glass/60 px-3 py-1 rounded text-sm">⚡ Speed Boost</button>
+                <button onclick="choosePowerup('damage')" class="bg-glass hover:bg-glass/60 px-3 py-1 rounded text-sm">💥 Extra Damage</button>
+                <button onclick="choosePowerup('health')" class="bg-glass hover:bg-glass/60 px-3 py-1 rounded text-sm">❤️ Extra Health</button>
+                <button onclick="choosePowerup('fire')" class="bg-glass hover:bg-glass/60 px-3 py-1 rounded text-sm">🔥 Faster Fire</button>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-3 mb-4">
+            <button onclick="createRoom()" class="bg-green-500 hover:bg-green-400 py-3 rounded-lg font-bold transition-all">✨ CREATE NEW ROOM</button>
+            <div class="flex gap-2">
+                <input type="text" id="joinCode" placeholder="4-LETTER CODE" maxlength="4" class="flex-1 bg-glass rounded-lg px-4 py-3 text-center uppercase">
+                <button onclick="joinRoom()" class="bg-blue-500 hover:bg-blue-400 px-6 rounded-lg transition-all">JOIN</button>
+            </div>
+        </div>
+
+        <div class="flex justify-between">
+            <button onclick="goHome()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm transition-all">← BACK</button>
+            <button id="startGameBtn" onclick="startMultiplayer()" class="bg-yellow-500 hover:bg-yellow-400 px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all" style="display:none;">🚀 START GAME</button>
+        </div>
+    </div>
+</div>
+
+<!-- GAME -->
+<div id="gameContainer" style="display:none;">
+    <canvas id="gameCanvas" width="1920" height="1080"></canvas>
+
+    <div class="ui top-3 left-3 bg-panel backdrop-blur-md px-3 py-1.5 rounded-lg text-sm font-medium">
+        👤 <span id="playerNameDisplay">Player</span> | 🔴 <span id="redScore">0</span> : <span id="blueScore">0</span> 🔵
+    </div>
+
+    <div class="ui top-3 left-1/2 -translate-x-1/2 bg-panel backdrop-blur-md px-4 py-2 rounded-lg flex gap-6 text-sm">
+        <div>❤️ <span id="uiHealth">100</span></div>
+        <div>🔫 <span id="uiKills">0</span></div>
+    </div>
+
+    <button onclick="leaveGame()" class="ui interactive bottom-4 left-1/2 -translate-x-1/2 bg-red-500/90 hover:bg-red-500 px-4 py-2 rounded-lg shadow-lg font-medium transition-all">
+        🚪 LEAVE GAME
+    </button>
+
+    <div id="deathScreen" class="ui top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-500/90 backdrop-blur-md px-8 py-4 rounded-xl shadow-2xl text-center text-xl font-bold" style="display:none;">
+        💀 YOU DIED! <br><span class="text-base font-normal">Respawning...</span>
+    </div>
+
+    <div id="winScreen" class="ui top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-green-500/90 backdrop-blur-md px-10 py-6 rounded-xl shadow-2xl text-center" style="display:none;">
+        <h3 class="text-3xl font-bold mb-3">🎉 <span id="winnerText"></span> WINS ROUND!</h3>
+        <div id="matchEndText" class="hidden mb-3 text-xl font-bold"></div>
+        <div class="flex gap-3 justify-center">
+            <button onclick="nextRound()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all cursor-pointer">NEXT ROUND</button>
+            <button onclick="goHome()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all cursor-pointer">MENU</button>
+        </div>
+    </div>
+
+    <div id="crosshair">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="14" r="11" stroke="#ffffff" stroke-width="2.5"/>
+            <line x1="14" y1="2" x2="14" y2="9" stroke="#ffffff" stroke-width="2.5"/>
+            <line x1="14" y1="19" x2="14" y2="26" stroke="#ffffff" stroke-width="2.5"/>
+            <line x1="2" y1="14" x2="9" y2="14" stroke="#ffffff" stroke-width="2.5"/>
+            <line x1="19" y1="14" x2="26" y2="14" stroke="#ffffff" stroke-width="2.5"/>
+        </svg>
+    </div>
+
+    <div id="mobileControls" class="ui bottom-10 left-0 right-0 flex justify-between px-10 pointer-events-none" style="display:none;">
+        <div class="w-36 h-36 rounded-full bg-white/10 backdrop-blur-sm relative pointer-events-auto shadow-xl" id="moveStick">
+            <div class="w-12 h-12 rounded-full bg-white/80 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 shadow-lg"></div>
+        </div>
+        <div class="w-36 h-36 rounded-full bg-red-500/10 backdrop-blur-sm relative pointer-events-auto shadow-xl" id="shootStick">
+            <div class="w-12 h-12 rounded-full bg-red-400/80 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 shadow-lg"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script>
-
-const game = document.getElementById("game");
-const player = document.getElementById("player");
-const scoreEl = document.getElementById("score");
-const hpEl = document.getElementById("hp");
-const waveEl = document.getElementById("wave");
-const subtitle = document.getElementById("subtitle");
-const gameOverScreen = document.getElementById("gameOver");
-const crosshair = document.getElementById("crosshair");
-
-window.addEventListener("mousemove", e => {
-  crosshair.style.left = e.clientX + "px";
-  crosshair.style.top = e.clientY + "px";
-});
-
-let score = 0;
-let hp = 3;
-let wave = 1;
-
-let gameOver = false;
-
-let playerX = 120;
-let playerY = window.innerHeight - 180;
-
-const enemies = [];
-const bananas = [];
-const powerups = [];
-
-const keys = {};
-
-let bananaCooldown = false;
-let dashCooldown = false;
-
-//////////////////////////////
-// SUBTITLE SYSTEM
-//////////////////////////////
-
-function say(text) {
-  subtitle.innerText = text;
-}
-
-//////////////////////////////
-// INPUT
-//////////////////////////////
-
-document.addEventListener("keydown", e => {
-
-  e.preventDefault();
-
-  keys[e.key.toLowerCase()] = true;
-
-  if (e.code === "Space") {
-    shootBanana();
-  }
-
-  if (e.key === "Shift") {
-    dash();
-  }
-});
-
-document.addEventListener("keyup", e => {
-  keys[e.key.toLowerCase()] = false;
-});
-
-//////////////////////////////
-// PLAYER
-//////////////////////////////
-
-function updatePlayer() {
-
-  let speed = 5;
-
-  if (keys["w"]) playerY -= speed;
-  if (keys["s"]) playerY += speed;
-  if (keys["a"]) playerX -= speed;
-  if (keys["d"]) playerX += speed;
-
-  playerX = Math.max(0, Math.min(window.innerWidth - 75, playerX));
-  playerY = Math.max(0, Math.min(window.innerHeight - 75, playerY));
-
-  player.style.left = playerX + "px";
-  player.style.top = playerY + "px";
-}
-
-function dash() {
-
-  if (dashCooldown || gameOver) return;
-
-  dashCooldown = true;
-
-  player.classList.add("playerDash");
-
-  playerX += 100;
-
-  setTimeout(() => {
-    player.classList.remove("playerDash");
-  }, 200);
-
-  say("🗿 DASHED LIKE A MANIAC");
-
-  setTimeout(() => {
-    dashCooldown = false;
-  }, 1500);
-}
-
-//////////////////////////////
-// BANANAS
-//////////////////////////////
-
-let mouseX = window.innerWidth / 2;
-let mouseY = window.innerHeight / 2;
-
-window.addEventListener("mousemove", e => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-});
-
-window.addEventListener("touchmove", e => {
-  mouseX = e.touches[0].clientX;
-  mouseY = e.touches[0].clientY;
-});
-
-function shootBanana() {
-
-  if ((bananaCooldown && !laserMode) || gameOver) return;
-
-  const b = document.createElement("div");
-
-  b.className = "banana";
-  b.innerText = laserMode ? "⚡🍌" : "🍌";
-
-  game.appendChild(b);
-
-  const startX = playerX + 35;
-  const startY = playerY + 20;
-
-  const dx = mouseX - startX;
-  const dy = mouseY - startY;
-
-  const dist = Math.hypot(dx, dy);
-
-  const speed = laserMode ? 18 : 10;
-
-  bananas.push({
-    el: b,
-    x: startX,
-    y: startY,
-    vx: (dx / dist) * speed,
-    vy: (dy / dist) * speed,
-    laser: laserMode
-  });
-
-  if (!laserMode) {
-    bananaCooldown = true;
-
-    setTimeout(() => {
-      bananaCooldown = false;
-    }, 150);
-  }
-}
-
-function updateBananas() {
-
-  // AUTO FIRE DURING LASER MODE
-  if (laserMode && Math.random() < 0.35) {
-    shootBanana();
-  }
-
-  bananas.forEach((banana, i) => {
-
-    banana.x += banana.vx;
-    banana.y += banana.vy;
-
-    banana.el.style.left = banana.x + "px";
-    banana.el.style.top = banana.y + "px";
-
-    if (
-      banana.x < -100 ||
-      banana.x > window.innerWidth + 100 ||
-      banana.y < -100 ||
-      banana.y > window.innerHeight + 100
-    ) {
-
-      banana.el.remove();
-      bananas.splice(i, 1);
-    }
-  });
-}
-
-//////////////////////////////
-// ENEMIES
-//////////////////////////////
-
-function spawnEnemy() {
-
-  if (gameOver) return;
-
-  const e = document.createElement("div");
-
-  e.className = "enemy";
-
-  const types = [
-    { emoji: "😡", speed: 2, hp: 1 },
-    { emoji: "🤖", speed: 3.5, hp: 1, class: "fastEnemy" },
-    { emoji: "👹", speed: 1.4, hp: 3, class: "tankEnemy" },
-    { emoji: "🦍", speed: 4.5, hp: 8, class: "gorillaBoss", gorilla: true }
-  ];
-
-  const type = types[Math.floor(Math.random() * types.length)];
-
-  e.innerText = type.emoji;
-
-  if (type.class) e.classList.add(type.class);
-
-  game.appendChild(e);
-
-  enemies.push({
-    el: e,
-    x: Math.random() * (window.innerWidth - 70),
-    y: -70,
-    speed: type.speed + wave * 0.08,
-    hp: type.hp,
-    gorilla: type.gorilla || false
-  });
-}
-
-setInterval(() => {
-
-  spawnEnemy();
-
-  if (Math.random() < 0.15) {
-    spawnPowerup();
-  }
-
-}, 850);
-
-function updateEnemies() {
-
-  enemies.forEach((enemy, ei) => {
-
-    if (enemy.gorilla) {
-
-      const dx = playerX - enemy.x;
-      const dy = playerY - enemy.y;
-
-      const dist = Math.hypot(dx, dy);
-
-      enemy.x += (dx / dist) * enemy.speed;
-      enemy.y += (dy / dist) * enemy.speed;
-
-      enemy.el.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
-
-    } else {
-      enemy.y += enemy.speed;
-    }
-
-    enemy.el.style.left = enemy.x + "px";
-    enemy.el.style.top = enemy.y + "px";
-
-    // PLAYER HIT
-    if (
-      enemy.x < playerX + 60 &&
-      enemy.x + 60 > playerX &&
-      enemy.y < playerY + 60 &&
-      enemy.y + 60 > playerY
-    ) {
-
-      enemy.el.remove();
-      enemies.splice(ei, 1);
-
-      takeDamage();
-    }
-
-    // BANANA HIT
-    bananas.forEach((banana, bi) => {
-
-      if (
-        banana.x < enemy.x + 50 &&
-        banana.x + 30 > enemy.x &&
-        banana.y < enemy.y + 50 &&
-        banana.y + 30 > enemy.y
-      ) {
-
-        enemy.hp -= banana.laser ? 3 : 1;
-
-        banana.el.remove();
-        bananas.splice(bi, 1);
-
-        createExplosion(enemy.x, enemy.y);
-
-        if (enemy.hp <= 0) {
-
-          flashScreen("rgba(255,255,0,0.4)");
-
-          if (enemy.gorilla) {
-            say("🦍 GORILLA BOY GOT ABSOLUTELY VAPORIZED");
-
-            // CHAOS SPLIT BANANAS
-            for (let s = 0; s < 6; s++) {
-
-              const split = document.createElement("div");
-              split.className = "banana";
-              split.innerText = "🍌";
-
-              game.appendChild(split);
-
-              const angle = (Math.PI * 2 / 6) * s;
-
-              bananas.push({
-                el: split,
-                x: enemy.x,
-                y: enemy.y,
-                vx: Math.cos(angle) * 8,
-                vy: Math.sin(angle) * 8,
-                laser: true
-              });
-            }
-          }
-
-          enemy.el.remove();
-          enemies.splice(ei, 1);
-
-          score += enemy.gorilla ? 10 : 1;
-
-          if (score % 10 === 0) {
-            wave++;
-            waveEl.innerText = wave;
-            say("⚠️ WAVE " + wave + " HAS ARRIVED");
-          }
-
-          scoreEl.innerText = score;
+// --------------------------
+// CORE SYSTEM
+// --------------------------
+let deviceType = localStorage.getItem('deviceType') || "";
+let loggedIn = localStorage.getItem('loggedIn') === 'true';
+let currentUser = localStorage.getItem('currentUser') || "";
+let isRegister = false;
+
+// Multiplayer Settings
+let roundLimit = 3;
+let redScore = 0;
+let blueScore = 0;
+let activePowerups = { red: null, blue: null };
+let peer, roomId, connections = {};
+let isHost = false;
+let players = {};
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let mouse = {x:0, y:0, down:false, canvasX:0, canvasY:0};
+let hasWon = false; // ✅ Prevent infinite win triggers
+
+window.onload = () => {
+    if(deviceType) {
+        setDevice(deviceType, true);
+        if(loggedIn && currentUser) {
+            document.getElementById('playerNameDisplay').textContent = currentUser;
+            document.getElementById('currentUserDisplay').textContent = currentUser;
+            switchScreen('homeScreen');
+        } else {
+            switchScreen('loginScreen');
         }
-      }
-    });
-  });
-}
-
-//////////////////////////////
-// POWERUPS
-//////////////////////////////
-
-function spawnPowerup() {
-
-  const p = document.createElement("div");
-
-  p.className = "powerup";
-  p.innerText = "💊";
-
-  game.appendChild(p);
-
-  powerups.push({
-    el: p,
-    x: Math.random() * (window.innerWidth - 60),
-    y: Math.random() * (window.innerHeight - 300)
-  });
-}
-
-function updatePowerups() {
-
-  powerups.forEach((p, i) => {
-
-    p.el.style.left = p.x + "px";
-    p.el.style.top = p.y + "px";
-
-    if (
-      p.x < playerX + 60 &&
-      p.x + 60 > playerX &&
-      p.y < playerY + 60 &&
-      p.y + 60 > playerY
-    ) {
-
-      hp++;
-      hpEl.innerText = hp;
-
-      say("💊 YOU ATE MYSTERY MEDICINE");
-
-      p.el.remove();
-      powerups.splice(i, 1);
     }
-  });
+};
+
+function switchScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    if(id) document.getElementById(id).classList.add('active');
 }
 
-//////////////////////////////
-// DAMAGE
-//////////////////////////////
-
-function takeDamage() {
-
-  hp--;
-
-  hpEl.innerText = hp;
-
-  say("💀 OW THAT PROBABLY HURT");
-
-  game.style.transform = "translateX(8px)";
-
-  setTimeout(() => {
-    game.style.transform = "translateX(0px)";
-  }, 80);
-
-  if (hp <= 0) {
-    die();
-  }
+function setDevice(type, skip=false) {
+    deviceType = type;
+    localStorage.setItem('deviceType', type);
+    if(!skip) switchScreen('loginScreen');
+    if(type === 'mobile') {
+        document.getElementById('mobileControls').style.display = 'flex';
+    }
 }
 
-//////////////////////////////
-// EXPLOSIONS
-//////////////////////////////
+function goHome() { 
+    document.getElementById('gameContainer').style.display = 'none';
+    document.getElementById('winScreen').style.display = 'none';
+    document.getElementById('deathScreen').style.display = 'none';
+    document.getElementById('powerupChoice').classList.add('hidden');
+    hasWon = false; // ✅ Reset win state
+    switchScreen('homeScreen'); 
+}
+function goMultiplayer() { switchScreen('multiplayerLobby'); }
 
-function createExplosion(x, y) {
-
-  const ex = document.createElement("div");
-
-  ex.className = "explosion";
-
-  ex.style.left = x + "px";
-  ex.style.top = y + "px";
-
-  game.appendChild(ex);
-
-  setTimeout(() => {
-    ex.remove();
-  }, 400);
+function switchAccount() {
+    loggedIn = false;
+    currentUser = "";
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('currentUser');
+    switchScreen('loginScreen');
 }
 
-//////////////////////////////
-// PARTICLES
-//////////////////////////////
-
-function createParticles() {
-
-  for (let i = 0; i < 30; i++) {
-
-    const p = document.createElement("div");
-
-    p.className = "particle";
-
-    p.style.left = Math.random() * window.innerWidth + "px";
-    p.style.top = Math.random() * window.innerHeight + "px";
-
-    p.style.animationDuration = 4 + Math.random() * 8 + "s";
-
-    game.appendChild(p);
-  }
+// --------------------------
+// LOGIN
+// --------------------------
+function getAccounts() { 
+    let data = localStorage.getItem('accounts');
+    return data ? JSON.parse(data) : {}; 
+}
+function saveAccount(u,p) { 
+    let a = getAccounts(); 
+    a[u] = p; 
+    localStorage.setItem('accounts', JSON.stringify(a)); 
 }
 
-createParticles();
-
-//////////////////////////////
-// GAME OVER
-//////////////////////////////
-
-function die() {
-
-  gameOver = true;
-
-  say("☠️ THE BANANAS HAVE WON");
-
-  gameOverScreen.style.display = "flex";
+function toggleMode() {
+    isRegister = !isRegister;
+    document.getElementById('loginTitle').textContent = isRegister ? "CREATE ACCOUNT" : "LOGIN";
+    event.target.textContent = isRegister ? "Switch to Login" : "Switch to Register";
+    document.getElementById('errorText').textContent = "";
 }
 
-//////////////////////////////
-// BANANA STORM
-//////////////////////////////
+function handleLogin() {
+    const u = document.getElementById('user').value.trim();
+    const p = document.getElementById('pass').value.trim();
+    const err = document.getElementById('errorText');
+    const acc = getAccounts();
 
-let stormCooldown = false;
+    if(!u || !p) return err.textContent = "❌ Fill all fields";
+    if(u.length < 3 || u.length > 12) return err.textContent = "❌ Username 3-12 chars";
+    if(p.length < 4) return err.textContent = "❌ Password min 4 chars";
 
-function bananaStorm() {
-
-  if (stormCooldown || gameOver) return;
-
-  stormCooldown = true;
-
-  say("🌪️ BANANA STORM ACTIVATED");
-
-  for (let i = 0; i < 25; i++) {
-
-    setTimeout(() => {
-
-      const b = document.createElement("div");
-
-      b.className = "banana";
-      b.innerText = "🍌";
-
-      game.appendChild(b);
-
-      bananas.push({
-        el: b,
-        x: Math.random() * window.innerWidth,
-        y: window.innerHeight,
-        speed: 8 + Math.random() * 5
-      });
-
-    }, i * 40);
-  }
-
-  setTimeout(() => {
-    stormCooldown = false;
-  }, 7000);
+    if(isRegister) {
+        if(acc[u]) return err.textContent = "❌ Username taken";
+        saveAccount(u, p);
+        loggedIn = true; 
+        currentUser = u;
+        localStorage.setItem('loggedIn', 'true'); 
+        localStorage.setItem('currentUser', u);
+        document.getElementById('playerNameDisplay').textContent = currentUser;
+        document.getElementById('currentUserDisplay').textContent = currentUser;
+        switchScreen('homeScreen');
+    } else {
+        if(!acc[u]) return err.textContent = "❌ Username not found";
+        if(acc[u] !== p) return err.textContent = "❌ Wrong password";
+        
+        loggedIn = true; 
+        currentUser = u;
+        localStorage.setItem('loggedIn', 'true'); 
+        localStorage.setItem('currentUser', u);
+        document.getElementById('playerNameDisplay').textContent = currentUser;
+        document.getElementById('currentUserDisplay').textContent = currentUser;
+        switchScreen('homeScreen');
+    }
 }
 
-//////////////////////////////
-// GOLDEN BANANA
-//////////////////////////////
-
-function spawnGoldenBanana() {
-
-  const g = document.createElement("div");
-
-  g.className = "powerup";
-  g.innerText = "👑🍌";
-
-  game.appendChild(g);
-
-  const golden = {
-    el: g,
-    x: Math.random() * (window.innerWidth - 60),
-    y: Math.random() * (window.innerHeight - 250)
-  };
-
-  powerups.push(golden);
+// --------------------------
+// MULTIPLAYER SETTINGS
+// --------------------------
+function setRounds(num) {
+    roundLimit = num;
+    document.getElementById('roundLimitText').textContent = num;
+    document.querySelectorAll('.round-btn').forEach(b=>b.classList.remove('bg-white/20'));
+    event.target.classList.add('bg-white/20');
 }
 
-setInterval(() => {
-
-  if (Math.random() < 0.2 && !gameOver) {
-    spawnGoldenBanana();
-  }
-
-}, 9000);
-
-//////////////////////////////
-// BANANA KING BOSS
-//////////////////////////////
-
-function spawnBoss() {
-
-  say("👑 THE BANANA KING HAS ARRIVED");
-
-  const boss = document.createElement("div");
-
-  boss.className = "enemy tankEnemy";
-
-  boss.style.width = "120px";
-  boss.style.height = "120px";
-  boss.style.fontSize = "60px";
-
-  boss.innerText = "🦍";
-
-  game.appendChild(boss);
-
-  enemies.push({
-    el: boss,
-    x: window.innerWidth / 2 - 60,
-    y: -120,
-    speed: 1,
-    hp: 25,
-    boss: true
-  });
+function choosePowerup(type) {
+    const loserTeam = redScore > blueScore ? 'blue' : 'red';
+    activePowerups[loserTeam] = type;
+    document.getElementById('powerupChoice').classList.add('hidden');
+    broadcast({type:'powerup', team:loserTeam, power:type});
 }
 
-//////////////////////////////
-// MEME EVENTS
-//////////////////////////////
+// --------------------------
+// GAME ENGINE ✅ NO MORE BREAKS
+// --------------------------
+let running = false;
+let keys = {};
+let kills = 0;
+let isDead = false;
 
-const randomMessages = [
-  "🍌 potassium overload detected",
-  "🗿 the monkey council is watching",
-  "💀 somebody slipped on a banana",
-  "👹 enemies are evolving",
-  "🤖 banana reactor stability: questionable"
+let player = {
+    x: 300, y: 900, w: 60, h: 100,
+    vx: 0, vy: 0, 
+    speed: 1.1,          
+    friction: 0.94,
+    jump: -11,           
+    gravity: 0.48,
+    onGround: false, 
+    health: 100, 
+    maxHealth: 100,
+    angle: 0, 
+    lastShot: 0, 
+    fireRate: 450,
+    bulletSpeed: 18,
+    color: "#0099ff",
+    name: currentUser || "Player",
+    team: null
+};
+
+let enemies = [];
+function resetEnemies() {
+    enemies = [
+        {
+            x:1600, y:900, w:60, h:100, 
+            health:100, maxHealth:100, 
+            speed: 1.1,      
+            dir:-1, color:"#FF2200", 
+            vy:0, lastShot:0, 
+            state:"combat", targetPos:{x:0,y:0}, jumpTimer:0, shotTimer:0, strafeDir:1,
+            minDistance:550, maxDistance:800,
+            accuracy:0.88, fireRate:900,
+            onGround:false, name:"Soldier 1", gravity:0.48, jump:-11
+        },
+        {
+            x:100, y:700, w:60, h:100, 
+            health:100, maxHealth:100, 
+            speed: 1.1,      
+            dir:1, color:"#FF4400", 
+            vy:0, lastShot:0, 
+            state:"combat", targetPos:{x:0,y:0}, jumpTimer:0, shotTimer:0, strafeDir:-1,
+            minDistance:500, maxDistance:750, 
+            accuracy:0.92, fireRate:750, 
+            onGround:false, name:"Soldier 2", gravity:0.48, jump:-11
+        },
+        {
+            x:1700, y:440, w:60, h:100, 
+            health:100, maxHealth:100, 
+            speed: 1.1,      
+            dir:-1, color:"#FF6600", 
+            vy:0, lastShot:0, 
+            state:"combat", targetPos:{x:0,y:0}, jumpTimer:0, shotTimer:0, strafeDir:1,
+            minDistance:450, maxDistance:700, 
+            accuracy:0.96, fireRate:600, 
+            onGround:false, name:"Elite", gravity:0.48, jump:-11
+        }
+    ];
+}
+
+const platforms = [
+    {x:0,y:1000,w:1920,h:80, solid:true, color:'#503820'},
+    {x:400,y:840,w:300,h:40, solid:false, color:'#5A4028'},
+    {x:900,y:700,w:300,h:40, solid:false, color:'#5A4028'},
+    {x:1400,y:540,w:300,h:40, solid:false, color:'#5A4028'},
+    {x:300,y:380,w:300,h:40, solid:false, color:'#5A4028'},
+    {x:1200,y:300,w:300,h:40, solid:false, color:'#5A4028'}
 ];
 
-setInterval(() => {
+let bullets = [];
+let enemyBullets = [];
 
-  if (!gameOver) {
-
-    say(randomMessages[Math.floor(Math.random() * randomMessages.length)]);
-  }
-
-}, 12000);
-
-//////////////////////////////
-// LASER BANANA MODE
-//////////////////////////////
-
-let laserMode = false;
-
-function activateLaserMode() {
-
-  if (laserMode || gameOver) return;
-
-  laserMode = true;
-
-  say("🔫 LASER BANANA MODE ACTIVATED");
-
-  player.style.boxShadow = "0 0 35px yellow";
-
-  setTimeout(() => {
-
-    laserMode = false;
-
-    player.style.boxShadow = `
-      0 0 20px rgba(0,0,0,0.35),
-      inset 0 0 12px rgba(255,255,255,0.3)
-    `;
-
-    say("🍌 laser bananas depleted");
-
-  }, 8000);
+function rectCollide(a,b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
 
-//////////////////////////////
-// METEOR BANANA
-//////////////////////////////
+function updatePhysics(obj) {
+    obj.onGround = false;
+    obj.vy += obj.gravity;
+    obj.vx *= obj.friction || 0.94;
+    obj.x += obj.vx;
+    obj.y += obj.vy;
 
-function spawnMeteorBanana() {
+    if(obj.x < 0) obj.x = 0;
+    if(obj.x + obj.w > 1920) obj.x = 1920 - obj.w;
 
-  const meteor = document.createElement("div");
+    platforms.forEach(p => {
+        if(rectCollide(obj, p)) {
+            if(!p.solid && obj.vy < 0) return;
 
-  meteor.className = "banana";
-  meteor.innerText = "☄️🍌";
+            const overlapX = Math.min(obj.x+obj.w, p.x+p.w) - Math.max(obj.x, p.x);
+            const overlapY = Math.min(obj.y+obj.h, p.y+p.h) - Math.max(obj.y, p.y);
 
-  game.appendChild(meteor);
-
-  let mx = Math.random() * window.innerWidth;
-  let my = -100;
-
-  const interval = setInterval(() => {
-
-    if (gameOver) {
-      clearInterval(interval);
-      return;
-    }
-
-    my += 12;
-
-    meteor.style.left = mx + "px";
-    meteor.style.top = my + "px";
-
-    enemies.forEach((enemy, ei) => {
-
-      if (
-        mx < enemy.x + 70 &&
-        mx + 40 > enemy.x &&
-        my < enemy.y + 70 &&
-        my + 40 > enemy.y
-      ) {
-
-        createExplosion(enemy.x, enemy.y);
-
-        enemy.el.remove();
-        enemies.splice(ei, 1);
-
-        score += 3;
-        scoreEl.innerText = score;
-      }
+            if(overlapX < overlapY) {
+                if(obj.x + obj.w/2 < p.x + p.w/2) obj.x -= overlapX;
+                else obj.x += overlapX;
+                obj.vx = 0;
+            } else {
+                if(obj.y + obj.h/2 < p.y + p.h/2) {
+                    obj.y -= overlapY;
+                    obj.onGround = true;
+                    obj.vy = 0;
+                } else {
+                    obj.y += overlapY;
+                    obj.vy = 0;
+                }
+            }
+        }
     });
 
-    if (my > window.innerHeight + 100) {
-      meteor.remove();
-      clearInterval(interval);
+    if(obj.team && activePowerups[obj.team]) {
+        switch(activePowerups[obj.team]) {
+            case 'speed': obj.speed = 1.6; break;
+            case 'damage': obj.damageMult = 1.5; break;
+            case 'health': obj.maxHealth = 150; obj.health = 150; break;
+            case 'fire': obj.fireRate = 320; break;
+        }
     }
-
-  }, 16);
 }
 
-setInterval(() => {
-
-  if (Math.random() < 0.25 && !gameOver) {
-    spawnMeteorBanana();
-  }
-
-}, 7000);
-
-//////////////////////////////
-// SCREEN FLASHES
-//////////////////////////////
-
-function flashScreen(color) {
-
-  const flash = document.createElement("div");
-
-  flash.style.position = "fixed";
-  flash.style.inset = "0";
-  flash.style.background = color;
-  flash.style.opacity = "0.35";
-  flash.style.pointerEvents = "none";
-  flash.style.zIndex = "999999";
-
-  flash.style.animation = "boom 0.3s ease forwards";
-
-  document.body.appendChild(flash);
-
-  setTimeout(() => {
-    flash.remove();
-  }, 300);
-}
-
-//////////////////////////////
-// MONKEY RAGE MODE
-//////////////////////////////
-
-function monkeyRage() {
-
-  say("🦍 MONKEY RAGE ACTIVATED");
-
-  for (let i = 0; i < 15; i++) {
-
-    setTimeout(() => {
-      spawnEnemy();
-    }, i * 100);
-  }
-}
-
-setInterval(() => {
-
-  if (Math.random() < 0.12 && !gameOver) {
-    monkeyRage();
-  }
-
-}, 18000);
-
-//////////////////////////////
-// SECRET KEYS
-//////////////////////////////
-
-document.addEventListener("keydown", e => {
-
-  if (e.key.toLowerCase() === "b") {
-    bananaStorm();
-  }
-
-  if (e.key.toLowerCase() === "k") {
-    spawnBoss();
-  }
-
-  if (e.key.toLowerCase() === "l") {
-    activateLaserMode();
-  }
-
-  if (e.key.toLowerCase() === "m") {
-    spawnMeteorBanana();
-  }
-
-  // NUCLEAR BANANA
-  if (e.key.toLowerCase() === "n") {
-
-    say("☢️ NUCLEAR BANANA DETONATED");
-
-    flashScreen("rgba(255,255,255,0.7)");
-
-    enemies.forEach(enemy => {
-      enemy.el.remove();
+function shoot() {
+    if(Date.now() - player.lastShot < player.fireRate) return;
+    player.lastShot = Date.now();
+    const dmg = 25 * (player.damageMult || 1);
+    bullets.push({
+        x:player.x+player.w/2 + Math.cos(player.angle)*30, 
+        y:player.y+player.h/2 + Math.sin(player.angle)*30, 
+        w:22, h:22,
+        vx:Math.cos(player.angle)*player.bulletSpeed,
+        vy:Math.sin(player.angle)*player.bulletSpeed,
+        dmg:dmg, 
+        color:player.color,
+        glow:true
     });
+}
 
-    score += enemies.length;
-    scoreEl.innerText = score;
+function updateEnemies() {
+    enemies.forEach(e => {
+        const dx = player.x - e.x;
+        const dy = player.y - e.y;
+        const dist = Math.hypot(dx, dy);
+        e.angle = Math.atan2(dy, dx);
 
-    enemies.length = 0;
-  }
+        e.jumpTimer--;
+        e.shotTimer--;
 
-  // GORILLA INVASION
-  if (e.key.toLowerCase() === "g") {
+        if(dist < e.minDistance) {
+            e.vx = dx < 0 ? e.speed * 1.4 : -e.speed * 1.4;
+        } 
+        else if(dist > e.maxDistance) {
+            e.vx = dx > 0 ? e.speed : -e.speed;
+        } 
+        else {
+            e.vx = e.speed * 0.9 * e.strafeDir;
+            if(Math.random() < 0.025) e.strafeDir *= -1;
+        }
 
-    say("🦍 GORILLA INVASION");
+        if(e.shotTimer <= 0 && dist < e.maxDistance + 200) {
+            const spread = (1 - e.accuracy) * 0.6;
+            const aimAngle = e.angle + (Math.random() - 0.5) * spread;
+            enemyBullets.push({
+                x:e.x+e.w/2 + Math.cos(aimAngle)*25, 
+                y:e.y+e.h/2 + Math.sin(aimAngle)*25, 
+                w:20, h:20, 
+                vx:Math.cos(aimAngle)*16, 
+                vy:Math.sin(aimAngle)*16,
+                dmg:12, 
+                color:e.color, 
+                glow:true
+            });
+            e.shotTimer = e.fireRate;
+        }
 
-    for (let i = 0; i < 8; i++) {
-      spawnEnemy();
-    }
-  }
+        if(e.onGround) {
+            if(dy < -70 || (Math.abs(dx) < 250 && dy < -30) || (e.jumpTimer < 0 && Math.random() < 0.035)) {
+                e.vy = e.jump;
+                e.jumpTimer = 100 + Math.random()*80;
+            }
+        }
+
+        if(e.health < 35) {
+            const coverDir = e.x < 960 ? 1 : -1;
+            e.vx = e.speed * coverDir * 1.2;
+            if(e.onGround && Math.random() < 0.05) e.vy = e.jump;
+        }
+
+        updatePhysics(e);
+    });
+}
+
+// --------------------------
+// INPUT ✅ PERFECT ALIGNMENT
+// --------------------------
+document.addEventListener("keydown",e=>keys[e.code]=true);
+document.addEventListener("keyup",e=>keys[e.code]=false);
+
+document.addEventListener("mousemove",e=>{
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+
+    const ch = document.getElementById('crosshair');
+    ch.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+
+    const rect = canvas.getBoundingClientRect();
+    mouse.canvasX = (e.clientX - rect.left) * (canvas.width / rect.width);
+    mouse.canvasY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+    player.angle = Math.atan2(
+        mouse.canvasY - (player.y + player.h/2), 
+        mouse.canvasX - (player.x + player.w/2)
+    );
 });
 
-//////////////////////////////
-// LOOP
-//////////////////////////////
+document.addEventListener("mousedown",()=>{ if(running) mouse.down=true; });
+document.addEventListener("mouseup",()=>mouse.down=false);
 
-function loop() {
+// --------------------------
+// GAME LOOP ✅ NO INFINITE LOOPS
+// --------------------------
+function startSolo() {
+    running = false;
+    kills = 0;
+    bullets = [];
+    enemyBullets = [];
+    isDead = false;
+    hasWon = false;
+    player = {
+        x:300,y:900,w:60,h:100,
+        vx:0,vy:0,
+        speed:1.1, friction:0.94, jump:-11, gravity:0.48,
+        onGround:false, health:100, maxHealth:100,
+        angle:0, lastShot:0, fireRate:450, bulletSpeed:18,
+        color:"#0099ff", name:currentUser || "Player"
+    };
+    resetEnemies();
 
-  if (!gameOver) {
+    switchScreen(null);
+    document.getElementById('gameContainer').style.display = 'block';
+    document.getElementById('deathScreen').style.display = 'none';
+    document.getElementById('winScreen').style.display = 'none';
+    document.getElementById('matchEndText').classList.add('hidden');
+    document.getElementById('powerupChoice').classList.add('hidden');
 
-    updatePlayer();
-    updateBananas();
-    updateEnemies();
-    updatePowerups();
-  }
-
-  requestAnimationFrame(loop);
+    running = true;
+    requestAnimationFrame(gameLoop);
 }
 
-loop();
+function startMultiplayer() {
+    running = false;
+    kills = 0;
+    bullets = [];
+    enemyBullets = [];
+    isDead = false;
+    hasWon = false;
+    player = {
+        x:300,y:900,w:60,h:100,
+        vx:0,vy:0,
+        speed:1.1, friction:0.94, jump:-11, gravity:0.48,
+        onGround:false, health:100, maxHealth:100,
+        angle:0, lastShot:0, fireRate:450, bulletSpeed:18,
+        color:player.team==='red'?'#ff3333':'#3366ff', 
+        name:currentUser || "Player", team:player.team
+    };
+    enemies = [];
 
+    switchScreen(null);
+    document.getElementById('gameContainer').style.display = 'block';
+    document.getElementById('deathScreen').style.display = 'none';
+    document.getElementById('winScreen').style.display = 'none';
+    document.getElementById('matchEndText').classList.add('hidden');
+    document.getElementById('powerupChoice').classList.add('hidden');
+
+    broadcast({type:'startGame', roundLimit:roundLimit});
+    running = true;
+    requestAnimationFrame(gameLoop);
+}
+
+function leaveGame() {
+    running = false;
+    document.getElementById('gameContainer').style.display = 'none';
+    document.getElementById('winScreen').style.display = 'none';
+    document.getElementById('powerupChoice').classList.add('hidden');
+    hasWon = false;
+    goHome();
+}
+
+function updateUI() {
+    document.getElementById('uiHealth').textContent = Math.max(0, player.health);
+    document.getElementById('uiKills').textContent = kills;
+    document.getElementById('redScore').textContent = redScore;
+    document.getElementById('blueScore').textContent = blueScore;
+}
+
+function checkDeath() {
+    if(player.health <= 0 && !isDead) {
+        isDead = true;
+        running = false;
+        document.getElementById('deathScreen').style.display = 'block';
+        setTimeout(()=>{
+            player.health = player.maxHealth;
+            isDead = false;
+            document.getElementById('deathScreen').style.display = 'none';
+            running = true;
+        }, 2000);
+    }
+}
+
+function checkWin() {
+    // ✅ FIXED: Only win if: solo + no enemies, OR multiplayer + enemy team eliminated
+    if (!hasWon && running && (
+        (enemies.length === 0 && Object.keys(players).length === 0) || 
+        (Object.keys(players).length > 0 && !players[player.team === 'red' ? 'blue' : 'red'])
+    )) {
+        hasWon = true; // ✅ Mark as won so it never repeats
+        running = false;
+        
+        const winnerName = currentUser.toUpperCase();
+        document.getElementById('winnerText').textContent = winnerName;
+
+        const winner = player.team || 'solo';
+        if(winner === 'red') redScore++;
+        if(winner === 'blue') blueScore++;
+
+        confetti({particleCount:350, spread:90, origin:{y:0.6}, colors:[player.color, '#ffffff', '#FFCC00']});
+        
+        if(redScore >= roundLimit || blueScore >= roundLimit) {
+            document.getElementById('matchEndText').textContent = "🏆 MATCH WINNER: " + (redScore > blueScore ? "RED TEAM" : "BLUE TEAM");
+            document.getElementById('matchEndText').classList.remove('hidden');
+            document.querySelector('#winScreen button[onclick="nextRound()"]').style.display = 'none';
+        } else {
+            document.getElementById('powerupChoice').classList.remove('hidden');
+            document.querySelector('#winScreen button[onclick="nextRound()"]').style.display = 'block';
+        }
+
+        document.getElementById('winScreen').style.display = 'block';
+    }
+}
+
+function nextRound() {
+    bullets = [];
+    enemyBullets = [];
+    isDead = false;
+    hasWon = false; // ✅ Reset win state
+    player.health = player.maxHealth;
+    resetEnemies();
+    document.getElementById('winScreen').style.display = 'none';
+    document.getElementById('powerupChoice').classList.add('hidden');
+    running = true;
+}
+
+function update() {
+    if(!running || isDead) return;
+
+    if(keys['KeyW'] || keys['ArrowUp']) { if(player.onGround) player.vy = player.jump; }
+    if(keys['KeyA'] || keys['ArrowLeft']) player.vx -= player.speed;
+    if(keys['KeyD'] || keys['ArrowRight']) player.vx += player.speed;
+    if(mouse.down) shoot();
+
+    updatePhysics(player);
+
+    bullets.forEach((b,i)=>{ b.x+=b.vx; b.y+=b.vy; if(b.x<0||b.x>1920||b.y<0||b.y>1080) bullets.splice(i,1); });
+    enemyBullets.forEach((b,i)=>{ 
+        b.x+=b.vx; b.y+=b.vy; 
+        if(b.x<0||b.x>1920||b.y<0||b.y>1080) enemyBullets.splice(i,1);
+        if(rectCollide(b, player)) { player.health -= b.dmg; enemyBullets.splice(i,1); updateUI(); }
+    });
+
+    if(enemies.length > 0) updateEnemies();
+
+    bullets.forEach((b,bi)=>{
+        enemies.forEach((e,ei)=>{
+            if(rectCollide(b,e)) {
+                e.health -= b.dmg;
+                bullets.splice(bi,1);
+                if(e.health <= 0) { enemies.splice(ei,1); kills++; updateUI(); }
+            }
+        });
+    });
+
+    checkDeath();
+    checkWin();
+    updateUI();
+}
+
+function render() {
+    ctx.clearRect(0,0,1920,1080);
+
+    platforms.forEach(p=>{ ctx.fillStyle = p.color; ctx.fillRect(p.x,p.y,p.w,p.h); });
+
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+    
+    ctx.save();
+    ctx.translate(player.x + player.w/2, player.y + player.h/2);
+    ctx.rotate(player.angle);
+    ctx.fillStyle = '#222'; ctx.fillRect(20, -7, 40, 14);
+    ctx.fillStyle = '#444'; ctx.fillRect(23, -5, 34, 10);
+    ctx.restore();
+
+    ctx.fillStyle = '#000'; ctx.font = 'bold 15px Arial'; ctx.textAlign = 'center';
+    ctx.fillText(player.name, player.x + player.w/2, player.y - 20);
+    ctx.fillStyle = '#333'; ctx.fillRect(player.x, player.y-12, player.w, 4);
+    ctx.fillStyle = '#2ecc71'; ctx.fillRect(player.x, player.y-12, player.w * (player.health/player.maxHealth), 4);
+
+    enemies.forEach(e=>{
+        ctx.fillStyle = e.color;
+        ctx.fillRect(e.x, e.y, e.w, e.h);
+        
+        ctx.save();
+        ctx.translate(e.x + e.w/2, e.y + e.h/2);
+        ctx.rotate(e.angle);
+        ctx.fillStyle = '#222'; ctx.fillRect(20, -7, 35, 14);
+        ctx.restore();
+
+        ctx.fillStyle = '#000'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center';
+        ctx.fillText(e.name, e.x + e.w/2, e.y - 18);
+        ctx.fillStyle = '#333'; ctx.fillRect(e.x, e.y-12, e.w, 4);
+        ctx.fillStyle = '#e74c3c'; ctx.fillRect(e.x, e.y-12, e.w * (e.health/e.maxHealth), 4);
+    });
+
+    Object.values(players).forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        
+        ctx.save();
+        ctx.translate(p.x + p.w/2, p.y + p.h/2);
+        ctx.rotate(p.angle);
+        ctx.fillStyle = '#222'; ctx.fillRect(20, -7, 40, 14);
+        ctx.restore();
+
+        ctx.fillStyle = '#000'; ctx.font = 'bold 15px Arial'; ctx.textAlign = 'center';
+        ctx.fillText(p.name, p.x + p.w/2, p.y - 20);
+        ctx.fillStyle = '#333'; ctx.fillRect(p.x, p.y-12, p.w, 4);
+        ctx.fillStyle = p.team === 'red' ? '#e74c3c' : '#3498db'; ctx.fillRect(p.x, p.y-12, p.w * (p.health/p.maxHealth), 4);
+    });
+
+    bullets.forEach(b=>{ 
+        ctx.shadowColor = b.color;
+        ctx.shadowBlur = 22;
+        ctx.fillStyle = b.color; 
+        ctx.beginPath(); ctx.arc(b.x,b.y,b.w/2,0,Math.PI*2); ctx.fill(); 
+        ctx.shadowBlur = 0;
+    });
+    enemyBullets.forEach(b=>{ 
+        ctx.shadowColor = b.color;
+        ctx.shadowBlur = 22;
+        ctx.fillStyle = b.color; 
+        ctx.beginPath(); ctx.arc(b.x,b.y,b.w/2,0,Math.PI*2); ctx.fill(); 
+        ctx.shadowBlur = 0;
+    });
+}
+
+function gameLoop() {
+    update();
+    render();
+    requestAnimationFrame(gameLoop);
+}
+
+// --------------------------
+// MULTIPLAYER
+// --------------------------
+function createRoom() {
+    isHost = true;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    roomId = Array(4).fill().map(()=>chars[Math.floor(Math.random()*26)]).join('');
+    peer = new Peer(roomId, {config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}]}});
+    peer.on('open', ()=>{
+        document.getElementById('roomInfo').textContent = "ROOM: " + roomId;
+        document.getElementById('status').textContent = "✅ Room Created";
+        document.getElementById('startGameBtn').style.display = 'block';
+    });
+    peer.on('connection', conn=>{
+        conn.on('open', ()=>{ 
+            connections[conn.connectionId]=conn; 
+            conn.send({type:'init', user:currentUser, team:player.team, roundLimit:roundLimit});
+        });
+        conn.on('data', data=>handleData(data, conn));
+    });
+}
+
+function joinRoom() {
+    const code = document.getElementById('joinCode').value.trim().toUpperCase();
+    if(code.length!==4) return;
+    roomId = code;
+    peer = new Peer();
+    peer.on('open', ()=>{
+        const conn = peer.connect(roomId);
+        conn.on('open', ()=>{ 
+            connections[conn.connectionId]=conn; 
+            document.getElementById('status').textContent = "✅ Connected";
+        });
+        conn.on('data', data=>handleData(data, conn));
+    });
+}
+
+function handleData(data, conn) {
+    if(data.type === 'init') {
+        players[conn.connectionId] = {name:data.user, team:data.team, color:data.team==='red'?'#ff3333':'#3366ff', x:300, y:900, w:60, h:100, health:100, maxHealth:100, angle:0};
+    }
+    if(data.type === 'startGame') {
+        roundLimit = data.roundLimit;
+        startMultiplayer();
+    }
+    if(data.type === 'powerup') {
+        activePowerups[data.team] = data.power;
+    }
+    if(data.type === 'playerUpdate') {
+        if(players[conn.connectionId]) Object.assign(players[conn.connectionId], data.state);
+    }
+}
+
+function broadcast(data) {
+    Object.values(connections).forEach(c=>c.send(data));
+}
+
+function selectTeam(team) {
+    player.team = team;
+    player.color = team==='red'?'#ff3333':team==='blue'?'#3366ff':'#0099ff';
+    document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('bg-white/20'));
+    event.target.classList.add('bg-white/20');
+}
+
+setInterval(()=>{
+    if(running && Object.keys(connections).length>0) {
+        broadcast({type:'playerUpdate', state:{x:player.x, y:player.y, angle:player.angle, health:player.health}});
+    }
+}, 50);
 </script>
-
 </body>
 </html>
